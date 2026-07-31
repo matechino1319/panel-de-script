@@ -1,0 +1,11 @@
+# Ocultos
+.*
+!.gitignore
+
+# Logs y temporales
+*.log
+log
+__pycache__/
+
+# Salidas
+outputs/

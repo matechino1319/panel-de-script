@@ -1,0 +1,6 @@
+flask
+pandas
+openpyxl
+Pillow
+rembg
+pywin32

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scripts disponibles</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="/">Panel de Scripts</a>
+        <nav class="site-nav">
+            <a href="/">Inicio</a>
+            <a href="/scripts.html" class="active-link">Scripts</a>
+        </nav>
+    </header>
+
+    <main class="panel-page">
+        <section class="panel-intro">
+            <div>
+                <span class="eyebrow">Panel</span>
+                <h1>Scripts</h1>
+                <p>Elegi una herramienta, subi el archivo y ejecuta el proceso.</p>
+            </div>
+            <div class="status-chip" id="server-status">Conectando...</div>
+        </section>
+
+        <section class="panel-toolbar">
+            <input id="search-input" class="search-input" type="search" placeholder="Buscar script">
+            <a class="secondary-link" href="/">Volver al inicio</a>
+        </section>
+
+        <section class="scripts-grid" id="scripts-grid"></section>
+    </main>
+
+    <template id="script-card-template">
+        <article class="script-card">
+            <div class="card-top">
+                <h3 class="script-title"></h3>
+                <p class="script-description"></p>
+            </div>
+            <div class="card-bottom">
+                <label class="file-picker">
+                    <input class="file-input" type="file">
+                    <span class="picker-button">Elegir archivo</span>
+                    <span class="picker-name">Ningun archivo seleccionado</span>
+                </label>
+                <button class="run-button" type="button" disabled>Ejecutar</button>
+            </div>
+        </article>
+    </template>
+
+    <script src="script.js"></script>
+</body>
+</html>
