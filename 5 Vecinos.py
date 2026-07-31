@@ -40,14 +40,12 @@ SUCURSALES = [
     "LY07-Cuadro Benegas",
     "LY19-Alvear",
     "LY22-CENTRO",
+    "LY25-Montoya",
+    "LY25-Alberdi",
     "LY34-Bowen",
     "LY37-Libertador",
     "LY42-Atuel Norte"
 ]
-
-# -------------------------
-# BUSCAR ARCHIVO: PRIORIDAD .xlsx/.xls/.xlsm -> .csv
-# No preguntas: toma el primer archivo encontrado (orden alfabético)
 # -------------------------
 def encontrar_archivo_entrada():
     archivo_directo = get_input_file()

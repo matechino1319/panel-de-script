@@ -94,6 +94,13 @@ SCRIPT_CATALOG = [
         "description": "Elimina el fondo de una imagen y descarga el resultado en PNG.",
         "accept": ".png,.jpg,.jpeg,.webp,.bmp,.tiff",
     },
+    {
+        "id": "promociones",
+        "title": "Informe Promociones",
+        "script": "informe_promociones.py",
+        "description": "Genera el informe consolidado de promociones (Vecinos, Empleados o Jubilados) por sucursal y franquicia.",
+        "accept": ".xlsx,.xls,.xlsm,.csv",
+    },
 ]
 
 SCRIPT_INDEX = {item["id"]: item for item in SCRIPT_CATALOG}
