@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Scripts — Automatización Inteligente</title>
-    <meta name="description" content="Plataforma para la ejecución de scripts de datos, procesamiento de Excel, CSV e informes automatizados.">
+    <title>Panel de Scripts</title>
+    <meta name="description" content="Panel de selección de herramientas para ejecutar scripts y descargar resultados.">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,7 +28,7 @@
         <nav class="site-nav">
             <a href="/" class="nav-link active">Inicio</a>
             <a href="/scripts.html" class="nav-link nav-btn">
-                <span>Explorar Tools</span>
+                <span>Scripts</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
             </a>
         </nav>
@@ -37,33 +37,30 @@
     <main>
         <section class="hero">
             <div class="hero-copy">
-                <div class="badge">
-                    <span class="badge-dot"></span>
-                    <span>Plataforma de Automatización v2.0</span>
-                </div>
-                <h1>Procesá tus datos en <span class="gradient-text">segundos</span></h1>
-                <p>Plataforma para procesar archivos Excel y CSV, generar reportes automáticos y resolver tareas de datos en un solo lugar.</p>
+                <span class="eyebrow">Sistema</span>
+                <h1>Panel de scripts</h1>
+                <p>Selección de herramientas para cargar archivos, ejecutar procesos y descargar resultados.</p>
                 <div class="hero-actions">
                     <a class="primary-btn" href="/scripts.html">
-                        <span>Abrir Panel de Herramientas</span>
+                        <span>Entrar al panel</span>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                     </a>
                 </div>
                 
                 <div class="hero-stats">
                     <div class="stat-item">
-                        <span class="stat-num">9+</span>
-                        <span class="stat-desc">Scripts Listos</span>
+                        <span class="stat-num">Carga</span>
+                        <span class="stat-desc">Excel y CSV</span>
                     </div>
                     <div class="stat-divider"></div>
                     <div class="stat-item">
-                        <span class="stat-num">100%</span>
-                        <span class="stat-desc">Automatizado</span>
+                        <span class="stat-num">Ejecución</span>
+                        <span class="stat-desc">Scripts Python</span>
                     </div>
                     <div class="stat-divider"></div>
                     <div class="stat-item">
-                        <span class="stat-num">Instantáneo</span>
-                        <span class="stat-desc">Procesamiento</span>
+                        <span class="stat-num">Salida</span>
+                        <span class="stat-desc">Descarga directa</span>
                     </div>
                 </div>
             </div>
@@ -74,7 +71,7 @@
                         <span class="dot red"></span>
                         <span class="dot yellow"></span>
                         <span class="dot green"></span>
-                        <span class="window-title">script_runner_live.sh</span>
+                        <span class="window-title">Acceso principal</span>
                     </div>
                     <div class="preview-content">
                         <div class="preview-row active">
@@ -83,7 +80,7 @@
                             </div>
                             <div class="row-info">
                                 <span class="row-title">Informe Biométrico</span>
-                                <span class="row-sub">Procesando asistencias...</span>
+                                <span class="row-sub">Asistencias</span>
                             </div>
                             <span class="pill pill-success">Listo</span>
                         </div>
@@ -93,8 +90,8 @@
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
                             </div>
                             <div class="row-info">
-                                <span class="row-title">Reporte de Convenios</span>
-                                <span class="row-sub">Consolidando tiendas</span>
+                                <span class="row-title">Convenios</span>
+                                <span class="row-sub">Reporte consolidado</span>
                             </div>
                             <span class="pill pill-idle">CSV</span>
                         </div>
@@ -104,8 +101,8 @@
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                             </div>
                             <div class="row-info">
-                                <span class="row-title">Excel Transferencias</span>
-                                <span class="row-sub">Extrayendo movimientos</span>
+                                <span class="row-title">Transferencias</span>
+                                <span class="row-sub">Movimientos</span>
                             </div>
                             <span class="pill pill-idle">XLSX</span>
                         </div>
@@ -113,37 +110,12 @@
                 </div>
             </div>
         </section>
-
-        <section class="features-section">
-            <div class="section-title">
-                <h2>¿Cómo funciona el panel?</h2>
-                <p>3 pasos simples para ejecutar tus procesos de datos.</p>
-            </div>
-
-            <div class="steps-grid">
-                <div class="step-card">
-                    <div class="step-icon">01</div>
-                    <h3>Elegí la herramienta</h3>
-                    <p>Buscá en el catálogo el script correspondiente al reporte o análisis que necesitás generar.</p>
-                </div>
-                <div class="step-card">
-                    <div class="step-icon">02</div>
-                    <h3>Cargá tus archivos</h3>
-                    <p>Arrastrá o seleccioná el archivo Excel o CSV requerido con soporte para validación inmediata.</p>
-                </div>
-                <div class="step-card">
-                    <div class="step-icon">03</div>
-                    <h3>Descargá el resultado</h3>
-                    <p>Ejecutá el script con un clic y obtené el informe final procesado al instante.</p>
-                </div>
-            </div>
-        </section>
     </main>
 
     <footer class="site-footer">
         <div class="footer-content">
-            <span>Panel de Scripts &copy; 2026</span>
-            <a href="/scripts.html" class="footer-link">Ir al Panel &rarr;</a>
+            <span>Panel de Scripts</span>
+            <a href="/scripts.html" class="footer-link">Abrir herramientas &rarr;</a>
         </div>
     </footer>
 </body>
