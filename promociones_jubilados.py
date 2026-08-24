@@ -18,9 +18,39 @@ if input_file.lower().endswith('.csv'):
 else:
     df = pd.read_excel(input_file)
 
-# Filtrar solo promociones de jubilados lunes y martes en "PromociÃ³n"
-df_filtrado = df[df['PromociÃ³n'].str.contains('JUBILADOS', case=False, na=False) & 
-                 df['PromociÃ³n'].str.contains('LUNES|MARTES', case=False, na=False)]
+def find_col(df, keywords):
+    for col in df.columns:
+        if any(k in col.lower() for k in keywords):
+            return col
+    raise KeyError(f"No se encontró columna para {keywords}. Columnas: {list(df.columns)}")
+
+col_promo = find_col(df, ['promo', 'mensaje'])
+col_tienda = find_col(df, ['tienda', 'sucursal'])
+col_trx = find_col(df, ['trx', 'transaccion', 'nro'])
+col_beneficio = find_col(df, ['beneficio', 'descuento', 'monto'])
+
+# Limpiar beneficio por si viene como texto con $ o comas
+def limpiar_valor_monetario(valor):
+    if pd.isna(valor): return 0.0
+    if isinstance(valor, (int, float)): return float(valor)
+    import re
+    s = str(valor).strip()
+    s = re.sub(r'[^\d,-.]', '', s)
+    if ',' in s and '.' in s:
+        if s.find(',') > s.find('.'): s = s.replace('.', '').replace(',', '.')
+        else: s = s.replace(',', '')
+    else: s = s.replace(',', '.')
+    if s.count('.') > 1:
+        parts = s.split('.')
+        s = ''.join(parts[:-1]) + '.' + parts[-1]
+    try: return abs(float(s))
+    except: return 0.0
+
+df[col_beneficio] = df[col_beneficio].apply(limpiar_valor_monetario)
+
+# Filtrar solo promociones de jubilados lunes y martes
+df_filtrado = df[df[col_promo].astype(str).str.contains('JUBILADOS', case=False, na=False) & 
+                 df[col_promo].astype(str).str.contains('LUNES|MARTES', case=False, na=False)].copy()
 
 # Lista de tiendas sucursal
 sucursales = [
@@ -30,14 +60,14 @@ sucursales = [
 ]
 
 # Crear columna Tipo
-df_filtrado['Tipo'] = df_filtrado['Tienda'].apply(lambda tienda: 'Sucursal' if tienda in sucursales else 'Franquicia')
+df_filtrado['Tipo'] = df_filtrado[col_tienda].apply(lambda tienda: 'Sucursal' if tienda in sucursales else 'Franquicia')
 
 # Agrupar por Tipo y Tienda, contando transacciones únicas y sumando descuento
 tabla = (
-    df_filtrado.groupby(['Tipo', 'Tienda'])
-    .agg(Transacciones=('Nro Trx', 'nunique'), Descuento=('$Beneficio', 'sum'))
+    df_filtrado.groupby(['Tipo', col_tienda])
+    .agg(Transacciones=(col_trx, 'nunique'), Descuento=(col_beneficio, 'sum'))
     .reset_index()
-)
+).rename(columns={col_tienda: 'Tienda'})
 
 # Separar Sucursales y Franquicias
 tabla_sucursal = tabla[tabla['Tipo'] == 'Sucursal'].copy()
