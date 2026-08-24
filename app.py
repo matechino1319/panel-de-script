@@ -38,20 +38,7 @@ SCRIPT_CATALOG = [
         "description": "Procesa el CSV de empleados y genera el informe semanal.",
         "accept": ".csv",
     },
-    {
-        "id": "jubilados",
-        "title": "Jubilados",
-        "script": "4 Jubilados.py",
-        "description": "Genera el reporte de promociones para jubilados.",
-        "accept": ".xlsx,.xls,.xlsm,.csv",
-    },
-    {
-        "id": "vecinos",
-        "title": "Vecinos",
-        "script": "5 Vecinos.py",
-        "description": "Analiza ventas de vecinos desde Excel o CSV.",
-        "accept": ".xlsx,.xls,.csv",
-    },
+
     {
         "id": "transferencias",
         "title": "Procesar transferencias",
