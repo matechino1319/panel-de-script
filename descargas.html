@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descargas - LA YUNTA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="glow-bg" style="background-image: url('logo_la_yunta_highres.png'); background-size: cover; background-repeat: no-repeat; background-position: center; opacity: 1;"></div>
+
+    <main>
+        <header class="site-header" style="background: rgba(255,255,255,0.9); backdrop-filter: blur(8px); margin: 1rem auto; max-width: 1200px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <a href="/" class="brand">
+                <div class="brand-icon" style="background: var(--primary);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                </div>
+                <span>Volver al Inicio</span>
+            </a>
+        </header>
+
+        <section style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; min-height: 80vh; padding-top: 5vh;">
+            <div class="hero-copy" style="max-width: 800px; margin: 0 auto; text-align: center; padding-bottom: 3rem;">
+                <div style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 2rem 3rem; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 20px 40px rgba(0,0,0,0.2); display: inline-block;">
+                    <h1 style="color: #0f172a; margin-bottom: 0.5rem; letter-spacing: -0.02em; font-size: 2.5rem; font-weight: 800;">Herramientas Descargables</h1>
+                    <p style="color: #334155; font-weight: 600; font-size: 1.1rem; margin: 0;">Programas y utilidades para descargar e instalar.</p>
+                </div>
+            </div>
+
+            <div class="tools-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto; padding: 0 1rem; margin-top: 5vh;">
+                <!-- Descarga 1 -->
+                <a href="/analizador_particiones.zip" download style="text-decoration: none;">
+                    <div class="glass-card preview-card" style="padding: 3rem 2rem; text-align: center; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; transition: transform 0.2s; border: 3px solid var(--primary);">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        <div>
+                            <h3 style="color: var(--text-primary); margin-bottom: 0.5rem; font-size: 1.25rem;">Analizador de Particiones</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem;">Descargar programa en formato .zip</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
