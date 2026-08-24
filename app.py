@@ -95,10 +95,17 @@ SCRIPT_CATALOG = [
         "accept": ".png,.jpg,.jpeg,.webp,.bmp,.tiff",
     },
     {
-        "id": "promociones",
-        "title": "Informe Promociones",
-        "script": "informe_promociones.py",
-        "description": "Genera el informe consolidado de promociones (Vecinos, Empleados o Jubilados) por sucursal y franquicia.",
+        "id": "promociones_vecinos",
+        "title": "Promociones Vecinos",
+        "script": "promociones_vecinos.py",
+        "description": "Genera el informe de promociones para Vecinos.",
+        "accept": ".xlsx,.xls,.xlsm,.csv",
+    },
+    {
+        "id": "promociones_jubilados",
+        "title": "Promociones Jubilados",
+        "script": "promociones_jubilados.py",
+        "description": "Genera el informe de promociones para Jubilados.",
         "accept": ".xlsx,.xls,.xlsm,.csv",
     },
 ]
