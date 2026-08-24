@@ -28,8 +28,8 @@ if sys.stdout.encoding != 'utf-8':
 # -------------------------
 # CONFIGURACIÓN
 # -------------------------
-# Carpeta de salida (intenta guardar en Drive, si falla guarda en carpeta actual)
-RUTA_DESTINO = r"G:\Mi unidad\ARCHIVOS_COMPARTIDOS_LAYUNTA\SISTEMAS\INFORMES VECINOS"
+# Carpeta de salida (usa la del runtime del panel)
+RUTA_DESTINO = ""
 
 # Lista de sucursales (las demás serán consideradas franquicias)
 SUCURSALES = [
@@ -45,29 +45,14 @@ SUCURSALES = [
 ]
 
 # -------------------------
-# BUSCAR ARCHIVO: PRIORIDAD .xlsx/.xls/.xlsm -> .csv
-# No preguntas: toma el primer archivo encontrado (orden alfabético)
+# BUSCAR ARCHIVO DEL PANEL
 # -------------------------
-def encontrar_archivo_entrada():
-    patrones_excel = ["*.xlsx", "*.xlsm", "*.xls"]
-    archivos = []
-    for p in patrones_excel:
-        archivos.extend(glob.glob(p))
-    archivos = sorted(list(dict.fromkeys(archivos)))  # únicos y ordenados
+from script_runtime import get_input_file, get_output_dir
+RUTA_DESTINO = get_output_dir()
 
-    if archivos:
-        return archivos[0]  # primer Excel encontrado
-
-    # Si no hay Excel, buscar CSV
-    archivos_csv = sorted(glob.glob("*.csv"))
-    if archivos_csv:
-        return archivos_csv[0]
-
-    return None
-
-archivo_entrada = encontrar_archivo_entrada()
+archivo_entrada = get_input_file()
 if archivo_entrada is None:
-    print("❌ No se encontraron archivos .xlsx/.xls/.csv en el directorio actual:", os.getcwd())
+    print("❌ No se recibió archivo de entrada.")
     sys.exit(1)
 
 print(f"✅ Archivo seleccionado automáticamente: {archivo_entrada}")

@@ -4,15 +4,19 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
-# Carpeta donde se ejecuta el script
-folder_path = os.path.dirname(os.path.abspath(__file__))
-excel_files = [f for f in os.listdir(folder_path) if f.endswith('.xlsx')]
-if not excel_files:
-    raise FileNotFoundError("No se encontró ningún archivo Excel en la carpeta.")
-excel_file = os.path.join(folder_path, excel_files[0])
+from script_runtime import get_input_file, get_output_dir
 
-# Cargar el Excel
-df = pd.read_excel(excel_file)
+input_file = get_input_file()
+if not input_file:
+    raise FileNotFoundError("No se recibió ningún archivo de entrada.")
+
+if input_file.lower().endswith('.csv'):
+    try:
+        df = pd.read_csv(input_file, encoding="utf-8", sep=';', on_bad_lines='skip')
+    except Exception:
+        df = pd.read_csv(input_file, encoding="latin-1", sep=';', on_bad_lines='skip')
+else:
+    df = pd.read_excel(input_file)
 
 # Filtrar solo promociones de jubilados lunes y martes en "PromociÃ³n"
 df_filtrado = df[df['PromociÃ³n'].str.contains('JUBILADOS', case=False, na=False) & 
@@ -75,7 +79,7 @@ full_report = pd.concat([
 ], ignore_index=True)
 
 # Escribir el reporte en Excel con formato
-output_file = os.path.join(folder_path, 'REPORTE_PROMOCIONES_JUBILADOS.xlsx')
+output_file = os.path.join(get_output_dir(), 'REPORTE_PROMOCIONES_JUBILADOS.xlsx')
 full_report.to_excel(output_file, sheet_name='REPORTE', index=False)
 
 # Formatear con openpyxl
