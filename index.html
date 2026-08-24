@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Scripts</title>
-    <meta name="description" content="Panel de selección de herramientas para ejecutar scripts y descargar resultados.">
+    <title>Informática - LA YUNTA</title>
+    <meta name="description" content="Portal de herramientas de Informática de LA YUNTA.">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,92 +19,56 @@
 
     <header class="site-header">
         <a class="brand" href="/">
-            <img src="favicon.svg" alt="Logo Panel de Scripts" width="36" height="36" style="border-radius: 9px; box-shadow: 0 4px 12px rgba(79,70,229,0.3);">
-            <span>Panel de Scripts</span>
+            <img src="logo_la_yunta.jpg" alt="Logo LA YUNTA" width="36" height="36" style="border-radius: 9px; box-shadow: 0 4px 12px rgba(79,70,229,0.3); object-fit: cover;">
+            <span>Informática LA YUNTA</span>
         </a>
         <nav class="site-nav">
             <a href="/" class="nav-link active">Inicio</a>
-            <a href="/scripts.html" class="nav-link nav-btn">
-                <span>Scripts</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </a>
+            <a href="/scripts.html" class="nav-link">Scripts</a>
         </nav>
     </header>
 
     <main>
         <section class="hero">
-            <div class="hero-copy">
-                <span class="eyebrow">Sistema</span>
-                <h1>Panel de scripts</h1>
-                <p>Selección de herramientas para cargar archivos, ejecutar procesos y descargar resultados.</p>
-                <div class="hero-actions">
-                    <a class="primary-btn" href="/scripts.html">
-                        <span>Entrar al panel</span>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                    </a>
-                </div>
-                
-                <div class="hero-stats">
-                    <div class="stat-item">
-                        <span class="stat-num">Carga</span>
-                        <span class="stat-desc">Excel y CSV</span>
-                    </div>
-                    <div class="stat-divider"></div>
-                    <div class="stat-item">
-                        <span class="stat-num">Ejecución</span>
-                        <span class="stat-desc">Scripts Python</span>
-                    </div>
-                    <div class="stat-divider"></div>
-                    <div class="stat-item">
-                        <span class="stat-num">Salida</span>
-                        <span class="stat-desc">Descarga directa</span>
-                    </div>
-                </div>
+            <div class="hero-copy" style="max-width: 800px; margin: 0 auto; text-align: center; padding-bottom: 3rem;">
+                <span class="eyebrow">LA YUNTA</span>
+                <h1>Departamento de Informática</h1>
+                <p>Plataforma centralizada de herramientas y recursos del sector.</p>
             </div>
 
-            <div class="hero-visual">
-                <div class="glass-card preview-card">
-                    <div class="card-header-bar">
-                        <span class="dot red"></span>
-                        <span class="dot yellow"></span>
-                        <span class="dot green"></span>
-                        <span class="window-title">Acceso principal</span>
-                    </div>
-                    <div class="preview-content">
-                        <div class="preview-row active">
-                            <div class="row-icon">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                            </div>
-                            <div class="row-info">
-                                <span class="row-title">Informe Biométrico</span>
-                                <span class="row-sub">Asistencias</span>
-                            </div>
-                            <span class="pill pill-success">Listo</span>
-                        </div>
-
-                        <div class="preview-row">
-                            <div class="row-icon">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
-                            </div>
-                            <div class="row-info">
-                                <span class="row-title">Convenios</span>
-                                <span class="row-sub">Reporte consolidado</span>
-                            </div>
-                            <span class="pill pill-idle">CSV</span>
-                        </div>
-
-                        <div class="preview-row">
-                            <div class="row-icon">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                            </div>
-                            <div class="row-info">
-                                <span class="row-title">Transferencias</span>
-                                <span class="row-sub">Movimientos</span>
-                            </div>
-                            <span class="pill pill-idle">XLSX</span>
+            <div class="tools-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1000px; margin: 0 auto; padding: 0 1rem;">
+                <!-- Herramienta 1 -->
+                <a href="/scripts.html" style="text-decoration: none;">
+                    <div class="glass-card preview-card" style="padding: 2rem; text-align: center; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; transition: transform 0.2s;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary)"><polyline points="9 18 15 12 9 6"/></svg>
+                        <div>
+                            <h3 style="color: var(--text-primary); margin-bottom: 0.5rem; font-size: 1.25rem;">Panel de Script</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem;">Ejecución de procesos y generación de reportes</p>
                         </div>
                     </div>
-                </div>
+                </a>
+
+                <!-- Herramienta 2 -->
+                <a href="https://botly.servepics.com/" target="_blank" style="text-decoration: none;">
+                    <div class="glass-card preview-card" style="padding: 2rem; text-align: center; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; transition: transform 0.2s;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary)"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                        <div>
+                            <h3 style="color: var(--text-primary); margin-bottom: 0.5rem; font-size: 1.25rem;">Verificador Promo</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem;">Sistema de verificación de promociones</p>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Herramienta 3 -->
+                <a href="http://138.97.177.80:8000/dashboard" target="_blank" style="text-decoration: none;">
+                    <div class="glass-card preview-card" style="padding: 2rem; text-align: center; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; transition: transform 0.2s;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary)"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        <div>
+                            <h3 style="color: var(--text-primary); margin-bottom: 0.5rem; font-size: 1.25rem;">Retail Monto</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem;">Dashboard de montos y operaciones retail</p>
+                        </div>
+                    </div>
+                </a>
             </div>
         </section>
     </main>
