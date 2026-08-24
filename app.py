@@ -169,6 +169,7 @@ def run_script(script_meta, uploaded_file, extra_files=None):
 
     env = os.environ.copy()
     env["PYTHONUTF8"] = "1"
+    env["PYTHONPATH"] = os.pathsep.join(sys.path)
     env["SCRIPT_INPUT_DIR"] = str(run_dir)
     env["SCRIPT_OUTPUT_DIR"] = str(run_dir)
     env["SCRIPT_INPUT_FILE"] = str(uploaded_path)
