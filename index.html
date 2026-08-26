@@ -3,81 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Informática - LA YUNTA</title>
-    <meta name="description" content="Portal de herramientas de Informática de LA YUNTA.">
+    <title>Informática — LA YUNTA</title>
+    <meta name="description" content="Portal de herramientas, scripts y utilidades del Departamento de Informática de LA YUNTA.">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="glow-bg" style="background-image: url('logo_la_yunta_highres.png'); background-size: cover; background-repeat: no-repeat; background-position: center; opacity: 1;"></div>
+    <div class="glow-bg"></div>
+
+    <header class="site-header">
+        <a class="brand" href="/">
+            <div class="brand-icon-wrap">
+                <img src="logo_la_yunta_highres.png" alt="Logo LA YUNTA" onerror="this.style.display='none'">
+            </div>
+            <div class="brand-text">
+                <span class="brand-title">LA YUNTA</span>
+                <span class="brand-sub">Informática</span>
+            </div>
+        </a>
+        <nav class="site-nav">
+            <a href="/" class="nav-link active">Inicio</a>
+            <a href="/scripts.html" class="nav-link">Scripts</a>
+            <a href="/descargas.html" class="nav-link">Descargas</a>
+        </nav>
+    </header>
 
     <main>
-        <section style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; min-height: 150vh; padding-top: 5vh;">
-            <div class="hero-copy" style="max-width: 800px; margin: 4rem auto 0; text-align: center; padding-bottom: 3rem;">
-                <div style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 2rem 3rem; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 20px 40px rgba(0,0,0,0.2); display: inline-block;">
-                    <h1 style="color: #0f172a; margin-bottom: 0.5rem; letter-spacing: -0.02em; font-size: 2.5rem; font-weight: 800;">Departamento de Informática</h1>
-                    <p style="color: #334155; font-weight: 600; font-size: 1.1rem; margin: 0;">Plataforma centralizada de herramientas y recursos del sector.</p>
+        <section class="portal-hero">
+            <div class="badge">
+                <span class="badge-dot pulse"></span>
+                <span>Departamento de Informática</span>
+            </div>
+            <h1>Plataforma Centralizada de <span class="highlight">Herramientas</span></h1>
+            <p>Acceso directo a utilidades operativas, procesamiento de datos, sistemas de verificación y descargas.</p>
+        </section>
+
+        <section class="portal-grid">
+            <!-- Herramienta 1: Panel de Scripts -->
+            <a href="/scripts.html" class="portal-card">
+                <div class="portal-card-top">
+                    <div class="portal-card-icon">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="4 17 10 11 4 5"></polyline>
+                            <line x1="12" y1="19" x2="20" y2="19"></line>
+                        </svg>
+                    </div>
+                    <span class="portal-card-badge">Procesamiento</span>
                 </div>
-            </div>
+                <div class="portal-card-body">
+                    <h2 class="portal-card-title">Panel de Scripts</h2>
+                    <p class="portal-card-desc">Carga de archivos Excel y CSV para procesamiento automático (Biométrico, Convenios, Jubilados, Vecinos, etc.).</p>
+                </div>
+                <div class="portal-card-footer">
+                    <span>Abrir panel</span>
+                    <svg class="portal-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </div>
+            </a>
 
-            <div class="tools-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto; padding: 0 1rem; margin-top: 45vh;">
-                <!-- Herramienta 1 -->
-                <a href="/scripts.html" style="text-decoration: none;">
-                    <div class="glass-card preview-card" style="padding: 3rem 2rem; text-align: center; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; transition: transform 0.2s; border: 3px solid var(--primary);">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary)"><polyline points="9 18 15 12 9 6"/></svg>
-                        <div>
-                            <h3 style="color: var(--text-primary); margin-bottom: 0.5rem; font-size: 1.25rem;">Panel de Script</h3>
-                            <p style="color: var(--text-secondary); font-size: 0.9rem;">Ejecución de procesos y generación de reportes</p>
-                        </div>
+            <!-- Herramienta 2: Verificador Promo -->
+            <a href="https://botly.servepics.com/" target="_blank" rel="noopener noreferrer" class="portal-card">
+                <div class="portal-card-top">
+                    <div class="portal-card-icon">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            <polyline points="9 12 11 14 15 10"></polyline>
+                        </svg>
                     </div>
-                </a>
+                    <span class="portal-card-badge">Web Externa</span>
+                </div>
+                <div class="portal-card-body">
+                    <h2 class="portal-card-title">Verificador Promo</h2>
+                    <p class="portal-card-desc">Sistema interactivo en línea para la comprobación y auditoría de condiciones de promociones vigentes.</p>
+                </div>
+                <div class="portal-card-footer">
+                    <span>Acceder a la web</span>
+                    <svg class="portal-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                </div>
+            </a>
 
-                <!-- Herramienta 2 -->
-                <a href="https://botly.servepics.com/" style="text-decoration: none;">
-                    <div class="glass-card preview-card" style="padding: 3rem 2rem; text-align: center; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; transition: transform 0.2s; border: 3px solid var(--primary);">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary)"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                        <div>
-                            <h3 style="color: var(--text-primary); margin-bottom: 0.5rem; font-size: 1.25rem;">Verificador Promo</h3>
-                            <p style="color: var(--text-secondary); font-size: 0.9rem;">Sistema de verificación de promociones</p>
-                        </div>
+            <!-- Herramienta 3: Retail Monitor -->
+            <a href="http://138.97.177.80:8000/dashboard" target="_blank" rel="noopener noreferrer" class="portal-card">
+                <div class="portal-card-top">
+                    <div class="portal-card-icon">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
                     </div>
-                </a>
+                    <span class="portal-card-badge">Dashboard</span>
+                </div>
+                <div class="portal-card-body">
+                    <h2 class="portal-card-title">Retail Monitor</h2>
+                    <p class="portal-card-desc">Panel de control y visualización en tiempo real para supervisión de montos y operaciones comerciales.</p>
+                </div>
+                <div class="portal-card-footer">
+                    <span>Ver dashboard</span>
+                    <svg class="portal-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                </div>
+            </a>
 
-                <!-- Herramienta 3 -->
-                <a href="http://138.97.177.80:8000/dashboard" style="text-decoration: none;">
-                    <div class="glass-card preview-card" style="padding: 3rem 2rem; text-align: center; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; transition: transform 0.2s; border: 3px solid var(--primary);">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary)"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                        <div>
-                            <h3 style="color: var(--text-primary); margin-bottom: 0.5rem; font-size: 1.25rem;">Retail Monitor</h3>
-                            <p style="color: var(--text-secondary); font-size: 0.9rem;">Dashboard de montos y operaciones retail</p>
-                        </div>
+            <!-- Herramienta 4: Descargas -->
+            <a href="/descargas.html" class="portal-card">
+                <div class="portal-card-top">
+                    <div class="portal-card-icon">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
                     </div>
-                </a>
-
-                <!-- Herramienta 4 -->
-                <a href="/descargas.html" style="text-decoration: none;">
-                    <div class="glass-card preview-card" style="padding: 3rem 2rem; text-align: center; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; transition: transform 0.2s; border: 3px solid var(--primary);">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                        <div>
-                            <h3 style="color: var(--text-primary); margin-bottom: 0.5rem; font-size: 1.25rem;">Herramientas Descargables</h3>
-                            <p style="color: var(--text-secondary); font-size: 0.9rem;">Ver programas y herramientas disponibles</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
+                    <span class="portal-card-badge">Descargas</span>
+                </div>
+                <div class="portal-card-body">
+                    <h2 class="portal-card-title">Herramientas Descargables</h2>
+                    <p class="portal-card-desc">Programas, paquetes ejecutables y utilidades locales disponibles para su instalación y uso directo.</p>
+                </div>
+                <div class="portal-card-footer">
+                    <span>Ver descargas</span>
+                    <svg class="portal-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </div>
+            </a>
         </section>
     </main>
 
     <footer class="site-footer">
         <div class="footer-content">
-            <span>Panel de Scripts</span>
-            <a href="/scripts.html" class="footer-link">Abrir herramientas &rarr;</a>
+            <span>© LA YUNTA — Departamento de Informática</span>
+            <a href="/scripts.html" class="footer-link">Panel de Scripts &rarr;</a>
         </div>
     </footer>
 </body>

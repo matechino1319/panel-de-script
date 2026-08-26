@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scripts disponibles — Panel de Scripts</title>
+    <title>Panel de Scripts — LA YUNTA</title>
     <meta name="description" content="Elegí una herramienta, subí el archivo y ejecutá el proceso.">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="style.css">
@@ -19,32 +19,37 @@
 
     <header class="site-header">
         <a class="brand" href="/">
-            <img src="favicon.svg" alt="Logo Panel de Scripts" width="36" height="36" style="border-radius: 9px; box-shadow: 0 4px 12px rgba(79,70,229,0.3);">
-            <span>Panel de Scripts</span>
+            <div class="brand-icon-wrap">
+                <img src="logo_la_yunta_highres.png" alt="Logo LA YUNTA" onerror="this.style.display='none'">
+            </div>
+            <div class="brand-text">
+                <span class="brand-title">LA YUNTA</span>
+                <span class="brand-sub">Informática</span>
+            </div>
         </a>
         <nav class="site-nav">
             <a href="/" class="nav-link">Inicio</a>
             <a href="/scripts.html" class="nav-link active">Scripts</a>
+            <a href="/descargas.html" class="nav-link">Descargas</a>
         </nav>
     </header>
 
     <main class="panel-page">
         <div class="panel-header">
             <div class="panel-title-area">
-                <span class="eyebrow">Panel</span>
-                <h1>Scripts</h1>
-                <p>Elegí una herramienta, subí el archivo y ejecutá el proceso.</p>
-            </div>
-            <div class="badge" style="margin-top: 14px;">
-                <span class="badge-dot pulse"></span>
-                <span id="server-status">Conectando...</span>
+                <div class="badge" style="margin-bottom: 12px;">
+                    <span class="badge-dot pulse"></span>
+                    <span id="server-status">Conectando...</span>
+                </div>
+                <h1>Panel de <span class="highlight" style="color: var(--primary);">Scripts</span></h1>
+                <p>Elegí una herramienta, subí el archivo y ejecutá el proceso de automatización.</p>
             </div>
         </div>
 
         <section class="panel-controls">
             <div class="search-box">
                 <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input id="search-input" class="search-input" type="search" placeholder="Buscar script">
+                <input id="search-input" class="search-input" type="search" placeholder="Buscar script...">
             </div>
 
             <div class="filter-tags" id="filter-tags">
@@ -68,7 +73,7 @@
 
     <footer class="site-footer">
         <div class="footer-content">
-            <span>Panel de Scripts</span>
+            <span>© LA YUNTA — Departamento de Informática</span>
             <a href="/" class="footer-link">&larr; Volver al inicio</a>
         </div>
     </footer>
