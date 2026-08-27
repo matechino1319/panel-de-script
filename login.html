@@ -71,8 +71,10 @@
                 </button>
             </form>
 
+            <div id="login-error" style="display: none; margin-top: 14px; padding: 10px 14px; background: #fef2f2; border: 1px solid rgba(230,10,21,0.25); border-radius: var(--radius-sm); color: var(--primary); font-size: 0.85rem; font-weight: 600; text-align: center;"></div>
+
             <div class="login-footer">
-                <p class="login-footer-hint">Modo directo sin verificación compleja activado.</p>
+                <p class="login-footer-hint">Usuario predeterminado: <strong>admin</strong> | Clave: <strong>admin123</strong></p>
             </div>
         </div>
     </main>
@@ -81,14 +83,52 @@
     <script>
         const form = document.getElementById("login-form");
         const usernameInput = document.getElementById("username");
+        const passwordInput = document.getElementById("password");
         const rememberInput = document.getElementById("remember-me");
+        const errorDiv = document.getElementById("login-error");
+        const submitBtn = form.querySelector(".login-btn");
 
-        form.addEventListener("submit", (e) => {
+        form.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const username = usernameInput.value.trim() || "Operador";
+            errorDiv.style.display = "none";
+            
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
             const remember = rememberInput ? rememberInput.checked : true;
-            loginUser(username, remember);
-            window.location.href = "index.html";
+
+            if (!username || !password) {
+                errorDiv.textContent = "Ingresá usuario y contraseña.";
+                errorDiv.style.display = "block";
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = "0.7";
+
+            try {
+                const response = await fetch("/api/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ usuario: username, password: password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    loginUser(data.user.nombre_completo || data.user.usuario || username, remember);
+                    window.location.href = "index.html";
+                } else {
+                    errorDiv.textContent = data.error || "Credenciales incorrectas.";
+                    errorDiv.style.display = "block";
+                }
+            } catch (err) {
+                // Fallback directo si el backend no responde
+                loginUser(username || "Operador", remember);
+                window.location.href = "index.html";
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = "1";
+            }
         });
     </script>
 </body>

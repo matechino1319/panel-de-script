@@ -2,4 +2,6 @@ flask
 pandas
 openpyxl
 Pillow
+psycopg2-binary
+PyMySQL
 pywin32; sys_platform == 'win32'
