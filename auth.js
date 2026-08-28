@@ -80,7 +80,8 @@ function renderAuthWidget() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    const isLogin = window.location.pathname.endsWith("login.html");
+    const path = (window.location.pathname || "").toLowerCase();
+    const isLogin = path.endsWith("login.html") || path.endsWith("/login") || path.includes("login");
     const user = checkAuth(isLogin);
     if (!isLogin && user) {
         renderAuthWidget();

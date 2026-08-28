@@ -9,3 +9,5 @@ __pycache__/
 
 # Salidas
 outputs/
+*.sqlite
+*.sqlite3

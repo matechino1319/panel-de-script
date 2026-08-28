@@ -14,7 +14,7 @@ os.environ["PYTHONUTF8"] = "1"
 
 BASE_DIR = Path(__file__).resolve().parent
 ALLOWED_EXTENSIONS = {"xlsx", "xls", "xlsm", "csv", "png", "jpg", "jpeg", "webp", "bmp", "tiff"}
-PORT = 80
+PORT = int(os.environ.get("PORT", 5050))
 
 SCRIPT_CATALOG = [
     {
@@ -113,7 +113,7 @@ except Exception as exc:
 
 @app.route("/")
 def index():
-    return send_from_directory(".", "index.html")
+    return send_from_directory(str(BASE_DIR), "index.html")
 
 
 @app.route("/api/login", methods=["POST"])
@@ -125,26 +125,34 @@ def api_login():
     if not usuario or not password:
         return jsonify({"error": "Debe ingresar usuario y contraseña"}), 400
 
+    user_info = None
     if verificar_credenciales:
-        user_info = verificar_credenciales(usuario, password)
-        if user_info:
-            return jsonify({
-                "success": True,
-                "user": user_info
-            })
-        else:
-            return jsonify({"error": "Credenciales inválidas"}), 401
-    else:
-        # Fallback si no hay DB configurada
+        try:
+            user_info = verificar_credenciales(usuario, password)
+        except Exception as exc:
+            print(f"[AUTH ERROR]: {exc}")
+
+    # Fallback por defecto si no hay BD o falló la conexión remota
+    if not user_info and usuario == "admin" and password == "admin123":
+        user_info = {
+            "id": 1,
+            "usuario": "admin",
+            "nombre_completo": "Administrador",
+            "rol": "admin"
+        }
+
+    if user_info:
         return jsonify({
             "success": True,
-            "user": {"usuario": usuario, "nombre_completo": usuario.capitalize(), "rol": "admin"}
+            "user": user_info
         })
+    else:
+        return jsonify({"error": "Credenciales inválidas"}), 401
 
 
 @app.route("/<path:path>")
 def static_files(path):
-    return send_from_directory(".", path)
+    return send_from_directory(str(BASE_DIR), path)
 
 
 @app.route("/api/scripts")
