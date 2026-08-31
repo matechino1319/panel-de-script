@@ -194,6 +194,109 @@ def _validar_password(stored_hash: str, password_raw: str) -> bool:
     return False
 
 
+def crear_usuario(usuario: str, nombre_completo: str, password_raw: str, rol: str = "admin"):
+    """
+    Crea un nuevo usuario (rol admin por defecto) en la base de datos.
+    Retorna una tupla (user_dict, error_reason).
+    """
+    clean_user = (usuario or "").strip()
+    clean_nombre = (nombre_completo or "").strip() or clean_user
+
+    if not clean_user:
+        return None, "El nombre de usuario es obligatorio."
+    if len(clean_user) < 3:
+        return None, "El usuario debe tener al menos 3 caracteres."
+    if not password_raw or len(password_raw) < 4:
+        return None, "La contraseña debe tener al menos 4 caracteres."
+
+    password_hash = generate_password_hash(password_raw)
+
+    try:
+        conn, engine = get_db_connection()
+    except Exception as conn_err:
+        return None, f"Error conectando a la base de datos: {conn_err}"
+
+    try:
+        cur = conn.cursor()
+
+        if engine == "postgres":
+            import psycopg2.extras
+            # Verificar si ya existe
+            cur.execute("SELECT id FROM usuarios WHERE LOWER(usuario) = LOWER(%s);", (clean_user,))
+            if cur.fetchone():
+                cur.close()
+                conn.close()
+                return None, f"El usuario '{clean_user}' ya existe."
+
+            cur.execute("""
+                INSERT INTO usuarios (usuario, nombre_completo, password_hash, rol, activo)
+                VALUES (%s, %s, %s, %s, %s)
+                RETURNING id, usuario, nombre_completo, rol, activo;
+            """, (clean_user, clean_nombre, password_hash, "admin", True))
+            new_user = cur.fetchone()
+            conn.commit()
+            cur.close()
+            conn.close()
+
+            return {
+                "id": new_user[0] if isinstance(new_user, (list, tuple)) else new_user["id"],
+                "usuario": clean_user,
+                "nombre_completo": clean_nombre,
+                "rol": "admin",
+            }, None
+
+        elif engine == "mysql":
+            cur.execute("SELECT id FROM usuarios WHERE LOWER(usuario) = LOWER(%s);", (clean_user,))
+            if cur.fetchone():
+                cur.close()
+                conn.close()
+                return None, f"El usuario '{clean_user}' ya existe."
+
+            cur.execute("""
+                INSERT INTO usuarios (usuario, nombre_completo, password_hash, rol, activo)
+                VALUES (%s, %s, %s, %s, %s);
+            """, (clean_user, clean_nombre, password_hash, "admin", True))
+            new_id = cur.lastrowid
+            conn.commit()
+            cur.close()
+            conn.close()
+
+            return {
+                "id": new_id,
+                "usuario": clean_user,
+                "nombre_completo": clean_nombre,
+                "rol": "admin",
+            }, None
+
+        else:  # sqlite
+            cur.execute("SELECT id FROM usuarios WHERE LOWER(usuario) = LOWER(?);", (clean_user,))
+            if cur.fetchone():
+                cur.close()
+                conn.close()
+                return None, f"El usuario '{clean_user}' ya existe."
+
+            cur.execute("""
+                INSERT INTO usuarios (usuario, nombre_completo, password_hash, rol, activo)
+                VALUES (?, ?, ?, ?, ?);
+            """, (clean_user, clean_nombre, password_hash, "admin", 1))
+            new_id = cur.lastrowid
+            conn.commit()
+            cur.close()
+            conn.close()
+
+            return {
+                "id": new_id,
+                "usuario": clean_user,
+                "nombre_completo": clean_nombre,
+                "rol": "admin",
+            }, None
+
+    except Exception as exc:
+        print(f"[DB CREATE USER ERROR]: {exc}")
+        return None, f"Error al guardar usuario en la base de datos: {exc}"
+
+
+
 def verificar_credenciales(username: str, password_raw: str):
     """
     Verifica usuario y contraseña contra la base de datos.

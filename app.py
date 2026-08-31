@@ -104,14 +104,14 @@ IMAGE_OUTPUT_SCRIPTS = {"quitar_fondo"}
 app = Flask(__name__, static_folder=".")
 
 try:
-    from db import init_db, verificar_credenciales
+    from db import init_db, verificar_credenciales, crear_usuario
     init_db()
 except Exception as exc:
     print(f"[DB LOAD ERROR]: {exc}")
     verificar_credenciales = None
+    crear_usuario = None
 
 
-@app.route("/")
 @app.route("/")
 def index():
     return send_from_directory(str(BASE_DIR), "index.html")
@@ -169,6 +169,41 @@ def db_test():
         }), 500
 
 
+@app.route("/api/register", methods=["POST"])
+def api_register():
+    data = request.get_json(silent=True) or request.form
+    usuario = (data.get("usuario") or data.get("username") or "").strip()
+    nombre = (data.get("nombre_completo") or data.get("nombre") or "").strip()
+    password = (data.get("password") or data.get("contraseña") or "").strip()
+
+    if not usuario:
+        return jsonify({"error": "El nombre de usuario es obligatorio"}), 400
+    if not password:
+        return jsonify({"error": "La contraseña es obligatoria"}), 400
+
+    if not crear_usuario:
+        return jsonify({"error": "Módulo de base de datos no disponible"}), 500
+
+    try:
+        user_info, error_msg = crear_usuario(
+            usuario=usuario,
+            nombre_completo=nombre or usuario,
+            password_raw=password,
+            rol="admin"
+        )
+        if error_msg:
+            return jsonify({"error": error_msg}), 400
+
+        return jsonify({
+            "success": True,
+            "message": "Usuario administrador creado exitosamente",
+            "user": user_info
+        }), 201
+    except Exception as exc:
+        print(f"[REGISTER ERROR]: {exc}")
+        return jsonify({"error": f"Error interno al crear usuario: {exc}"}), 500
+
+
 @app.route("/api/login", methods=["POST"])
 def api_login():
     data = request.get_json(silent=True) or request.form
@@ -177,6 +212,7 @@ def api_login():
 
     if not usuario or not password:
         return jsonify({"error": "Debe ingresar usuario y contraseña"}), 400
+
 
     if not verificar_credenciales:
         return jsonify({"error": "Módulo de base de datos no cargado"}), 500
