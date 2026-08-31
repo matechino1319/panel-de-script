@@ -86,7 +86,7 @@ def get_db_connection():
 
 def init_db():
     """
-    Crea la tabla de usuarios si no existe e inserta el usuario admin por defecto si la tabla está vacía.
+    Crea la tabla de usuarios si no existe.
     """
     try:
         conn, engine = get_db_connection()
@@ -107,16 +107,6 @@ def init_db():
             """)
             conn.commit()
 
-            cur.execute("SELECT COUNT(*) FROM usuarios;")
-            count = cur.fetchone()[0]
-            if count == 0:
-                default_hash = generate_password_hash("admin123")
-                cur.execute("""
-                    INSERT INTO usuarios (usuario, nombre_completo, password_hash, rol, activo)
-                    VALUES (%s, %s, %s, %s, %s);
-                """, ("admin", "Administrador", default_hash, "admin", True))
-                conn.commit()
-
         elif engine == "mysql":
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS usuarios (
@@ -131,17 +121,6 @@ def init_db():
                 );
             """)
             conn.commit()
-
-            cur.execute("SELECT COUNT(*) AS total FROM usuarios;")
-            row = cur.fetchone()
-            count = row["total"] if isinstance(row, dict) else row[0]
-            if count == 0:
-                default_hash = generate_password_hash("admin123")
-                cur.execute("""
-                    INSERT INTO usuarios (usuario, nombre_completo, password_hash, rol, activo)
-                    VALUES (%s, %s, %s, %s, %s);
-                """, ("admin", "Administrador", default_hash, "admin", True))
-                conn.commit()
 
         else:  # sqlite
             cur.execute("""
@@ -158,20 +137,11 @@ def init_db():
             """)
             conn.commit()
 
-            cur.execute("SELECT COUNT(*) FROM usuarios;")
-            count = cur.fetchone()[0]
-            if count == 0:
-                default_hash = generate_password_hash("admin123")
-                cur.execute("""
-                    INSERT INTO usuarios (usuario, nombre_completo, password_hash, rol, activo)
-                    VALUES (?, ?, ?, ?, ?);
-                """, ("admin", "Administrador", default_hash, "admin", 1))
-                conn.commit()
-
         cur.close()
         conn.close()
     except Exception as exc:
         print(f"[DB INIT ERROR]: {exc}")
+
 
 
 def _validar_password(stored_hash: str, password_raw: str) -> bool:
@@ -311,14 +281,6 @@ def verificar_credenciales(username: str, password_raw: str):
         conn, engine = get_db_connection()
     except Exception as conn_err:
         print(f"[DB CONNECTION ERROR]: {conn_err}")
-        # Fallback local de emergencia si la BD está inaccesible
-        if clean_user.lower() == "admin" and (password_raw == "admin123" or password_raw == "Mateo1319#"):
-            return {
-                "id": 1,
-                "usuario": "admin",
-                "nombre_completo": "Administrador (Local Fallback)",
-                "rol": "admin",
-            }, None
         return None, f"Error de conexión a la base de datos ({conn_err})"
 
     try:
@@ -424,13 +386,6 @@ def verificar_credenciales(username: str, password_raw: str):
 
     except Exception as exc:
         print(f"[DB AUTH QUERY ERROR]: {exc}")
-        if clean_user.lower() == "admin" and (password_raw == "admin123" or password_raw == "Mateo1319#"):
-            return {
-                "id": 1,
-                "usuario": "admin",
-                "nombre_completo": "Administrador (Local Fallback)",
-                "rol": "admin",
-            }, None
         return None, f"Error consultando base de datos: {exc}"
 
 
