@@ -36,6 +36,68 @@ def get_sqlite_path():
     return "panel_database.sqlite"
 
 
+def _parse_pg_url_to_params(db_url: str) -> dict:
+    """
+    Parsea una URL de PostgreSQL en un diccionario de parámetros para psycopg2.
+    Evita los errores de percent-encoding (libpq dsn error con %, #, & en contraseñas).
+    """
+    url = db_url.strip().strip("'\"")
+    for prefix in ("postgresql://", "postgres://"):
+        if url.startswith(prefix):
+            url = url[len(prefix):]
+            break
+
+    query_params = {}
+    if "?" in url:
+        url, qs = url.split("?", 1)
+        for part in qs.split("&"):
+            if "=" in part:
+                k, v = part.split("=", 1)
+                query_params[k.strip().lower()] = v.strip()
+
+    dbname = "postgres"
+    if "/" in url:
+        url, path_part = url.split("/", 1)
+        if path_part:
+            dbname = path_part.strip()
+
+    user = None
+    password = None
+    if "@" in url:
+        creds, host_port = url.rsplit("@", 1)
+        if ":" in creds:
+            user, password = creds.split(":", 1)
+        else:
+            user = creds
+    else:
+        host_port = url
+
+    host = host_port
+    port = 5432
+    if ":" in host_port:
+        h, p = host_port.split(":", 1)
+        host = h.strip()
+        try:
+            port = int(p.strip())
+        except ValueError:
+            port = 5432
+
+    params = {
+        "host": host,
+        "port": port,
+        "dbname": dbname,
+        "sslmode": query_params.get("sslmode", "require"),
+    }
+    if user:
+        from urllib.parse import unquote
+        params["user"] = unquote(user)
+    if password:
+        from urllib.parse import unquote
+        params["password"] = unquote(password)
+
+    return params
+
+
 def get_db_connection():
     """
     Retorna una conexión a la base de datos según la variable DATABASE_URL.
@@ -47,7 +109,6 @@ def get_db_connection():
         conn.row_factory = sqlite3.Row
         return conn, "sqlite"
 
-    # Limpiar espacios o comillas accidentales
     db_url = db_url.strip().strip("'\"")
 
     # Detección directa de PostgreSQL
@@ -55,27 +116,18 @@ def get_db_connection():
         import psycopg2
         import psycopg2.extras
 
-        # Normalizar postgres:// a postgresql:// para compatibilidad con psycopg2
-        if db_url.startswith("postgres://"):
-            db_url = "postgresql://" + db_url[len("postgres://"):]
-
+        # Intentar conectar con parámetros desglosados (soporta cualquier caracter especial en contraseña)
         try:
-            if "sslmode=" not in db_url.lower():
-                if "?" in db_url:
-                    db_url_with_ssl = db_url + "&sslmode=require"
-                else:
-                    db_url_with_ssl = db_url + "?sslmode=require"
-                conn = psycopg2.connect(db_url_with_ssl)
-            else:
-                conn = psycopg2.connect(db_url)
+            params = _parse_pg_url_to_params(db_url)
+            conn = psycopg2.connect(**params)
             return conn, "postgres"
-        except Exception as pg_err:
-            # Reintentar sin forzar sslmode en la URL si falló
+        except Exception as param_err:
+            # Fallback a conexión directa por URI
             try:
                 conn = psycopg2.connect(db_url)
                 return conn, "postgres"
             except Exception:
-                raise pg_err
+                raise param_err
 
     # Detección de MySQL
     elif db_url.startswith(("mysql://", "mysql2://")):
@@ -103,6 +155,7 @@ def get_db_connection():
         conn = sqlite3.connect(get_sqlite_path())
         conn.row_factory = sqlite3.Row
         return conn, "sqlite"
+
 
 
 
