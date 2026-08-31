@@ -321,6 +321,72 @@ body {
     letter-spacing: 0.04em;
 }
 
+/* Card 3-dots action menu */
+.card-actions-menu {
+    position: relative;
+    display: inline-block;
+}
+.card-menu-trigger {
+    background: transparent;
+    border: none;
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+.card-menu-trigger:hover {
+    background: #f1f5f9;
+    color: var(--text-primary);
+}
+.card-dropdown {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 4px;
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    z-index: 50;
+    min-width: 140px;
+    padding: 4px;
+    display: none;
+}
+.card-dropdown.show {
+    display: block;
+}
+.card-dropdown-item {
+    width: 100%;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: none;
+    background: none;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s ease;
+}
+.card-dropdown-item:hover {
+    background: #f8fafc;
+    color: var(--text-primary);
+}
+.card-dropdown-item.danger {
+    color: var(--primary);
+}
+.card-dropdown-item.danger:hover {
+    background: #fef2f2;
+    color: var(--primary-hover);
+}
+
 .portal-card-body {
     width: 100%;
 }

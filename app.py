@@ -111,8 +111,12 @@ try:
         cambiar_password_usuario,
         obtener_scripts_custom,
         guardar_custom_script,
+        actualizar_custom_script,
+        eliminar_custom_script,
         obtener_descargas_db,
         guardar_descarga_db,
+        actualizar_descarga_db,
+        eliminar_descarga_db,
         obtener_archivo_descarga_db,
     )
     init_db()
@@ -123,9 +127,14 @@ except Exception as exc:
     cambiar_password_usuario = None
     obtener_scripts_custom = lambda: []
     guardar_custom_script = lambda *args: (False, "DB no disponible")
+    actualizar_custom_script = lambda *args: (False, "DB no disponible")
+    eliminar_custom_script = lambda *args: (False, "DB no disponible")
     obtener_descargas_db = lambda: []
     guardar_descarga_db = lambda *args: (False, "DB no disponible")
+    actualizar_descarga_db = lambda *args: (False, "DB no disponible")
+    eliminar_descarga_db = lambda *args: (False, "DB no disponible")
     obtener_archivo_descarga_db = lambda *args: (None, None)
+
 
 
 
@@ -458,6 +467,57 @@ def api_descargas_route():
             "download_url": download_url,
         },
     }), 201
+
+
+@app.route("/api/scripts/<script_id>", methods=["PUT", "DELETE"])
+def api_script_detail_route(script_id):
+    if request.method == "DELETE":
+        ok, err = eliminar_custom_script(script_id)
+        if not ok:
+            return jsonify({"error": f"Error al eliminar script: {err}"}), 500
+        return jsonify({"success": True, "message": "Script eliminado con éxito."})
+
+    # PUT
+    data = request.get_json(silent=True) or request.form
+    title = (data.get("title") or "").strip()
+    description = (data.get("description") or "").strip()
+    accept_exts = (data.get("accept") or ".xlsx,.xls,.csv").strip()
+
+    if not title:
+        return jsonify({"error": "El título es obligatorio."}), 400
+
+    ok, err = actualizar_custom_script(script_id, title, description, accept_exts)
+    if not ok:
+        return jsonify({"error": f"Error al actualizar script: {err}"}), 500
+
+    return jsonify({"success": True, "message": "Script actualizado con éxito."})
+
+
+@app.route("/api/descargas/<int:descarga_id>", methods=["PUT", "DELETE"])
+def api_descarga_detail_route(descarga_id):
+    if request.method == "DELETE":
+        ok, err = eliminar_descarga_db(descarga_id)
+        if not ok:
+            return jsonify({"error": f"Error al eliminar descarga: {err}"}), 500
+        return jsonify({"success": True, "message": "Descarga eliminada con éxito."})
+
+    # PUT
+    data = request.get_json(silent=True) or request.form
+    title = (data.get("title") or "").strip()
+    description = (data.get("description") or "").strip()
+    badge = (data.get("badge") or "Paquete ZIP").strip()
+    download_url = (data.get("download_url") or "").strip()
+    file_size = (data.get("file_size") or "Enlace").strip()
+
+    if not title or not download_url:
+        return jsonify({"error": "El título y el enlace son obligatorios."}), 400
+
+    ok, err = actualizar_descarga_db(descarga_id, title, description, badge, download_url, file_size)
+    if not ok:
+        return jsonify({"error": f"Error al actualizar descarga: {err}"}), 500
+
+    return jsonify({"success": True, "message": "Descarga actualizada con éxito."})
+
 
 
 

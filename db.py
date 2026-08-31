@@ -473,6 +473,91 @@ def guardar_descarga_db(title, description, badge, filename, file_size, download
         return False, str(exc)
 
 
+def actualizar_custom_script(script_id, title, description, accept_exts):
+    """
+    Actualiza la información de un script dinámico.
+    """
+    try:
+        conn, engine = get_db_connection()
+        cur = conn.cursor()
+        placeholder = "%s" if engine in ("postgres", "mysql") else "?"
+        query = f"""
+            UPDATE custom_scripts
+            SET title = {placeholder}, description = {placeholder}, accept = {placeholder}
+            WHERE script_id = {placeholder};
+        """
+        cur.execute(query, (title, description, accept_exts, script_id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True, None
+    except Exception as exc:
+        print(f"[DB UPDATE SCRIPT ERROR]: {exc}")
+        return False, str(exc)
+
+
+def eliminar_custom_script(script_id):
+    """
+    Elimina un script dinámico de la base de datos.
+    """
+    try:
+        conn, engine = get_db_connection()
+        cur = conn.cursor()
+        placeholder = "%s" if engine in ("postgres", "mysql") else "?"
+        query = f"DELETE FROM custom_scripts WHERE script_id = {placeholder};"
+        cur.execute(query, (script_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True, None
+    except Exception as exc:
+        print(f"[DB DELETE SCRIPT ERROR]: {exc}")
+        return False, str(exc)
+
+
+def actualizar_descarga_db(descarga_id, title, description, badge, download_url, file_size):
+    """
+    Actualiza la información de una herramienta descargable.
+    """
+    try:
+        conn, engine = get_db_connection()
+        cur = conn.cursor()
+        placeholder = "%s" if engine in ("postgres", "mysql") else "?"
+        query = f"""
+            UPDATE descargas
+            SET title = {placeholder}, description = {placeholder}, badge = {placeholder}, download_url = {placeholder}, file_size = {placeholder}
+            WHERE id = {placeholder};
+        """
+        cur.execute(query, (title, description, badge, download_url, file_size, int(descarga_id)))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True, None
+    except Exception as exc:
+        print(f"[DB UPDATE DESCARGA ERROR]: {exc}")
+        return False, str(exc)
+
+
+def eliminar_descarga_db(descarga_id):
+    """
+    Elimina una herramienta descargable de la base de datos.
+    """
+    try:
+        conn, engine = get_db_connection()
+        cur = conn.cursor()
+        placeholder = "%s" if engine in ("postgres", "mysql") else "?"
+        query = f"DELETE FROM descargas WHERE id = {placeholder};"
+        cur.execute(query, (int(descarga_id),))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True, None
+    except Exception as exc:
+        print(f"[DB DELETE DESCARGA ERROR]: {exc}")
+        return False, str(exc)
+
+
+
 
 
 

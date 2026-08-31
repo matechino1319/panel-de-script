@@ -135,13 +135,70 @@ function buildCard(scriptMeta) {
     const cardTop = document.createElement("div");
     cardTop.className = "card-top";
     cardTop.innerHTML = `
-        <div class="card-header-row">
-            <div class="card-icon">${iconSvg}</div>
-            <span class="format-badge">${formatLabel}</span>
+        <div class="card-header-row" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="card-icon">${iconSvg}</div>
+                <span class="format-badge">${formatLabel}</span>
+            </div>
+            ${scriptMeta.is_custom ? `
+            <div class="card-actions-menu">
+                <button type="button" class="card-menu-trigger" title="Opciones">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="12" cy="12" r="1.5"></circle>
+                        <circle cx="12" cy="5" r="1.5"></circle>
+                        <circle cx="12" cy="19" r="1.5"></circle>
+                    </svg>
+                </button>
+                <div class="card-dropdown">
+                    <button type="button" class="card-dropdown-item btn-edit-script">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        Editar
+                    </button>
+                    <button type="button" class="card-dropdown-item danger btn-delete-script">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+            ` : ''}
         </div>
         <h3 class="script-title">${scriptMeta.title}</h3>
         <p class="script-description">${scriptMeta.description}</p>
     `;
+
+    if (scriptMeta.is_custom) {
+        const menuTrigger = cardTop.querySelector(".card-menu-trigger");
+        const dropdown = cardTop.querySelector(".card-dropdown");
+        const btnEdit = cardTop.querySelector(".btn-edit-script");
+        const btnDelete = cardTop.querySelector(".btn-delete-script");
+
+        if (menuTrigger && dropdown) {
+            menuTrigger.addEventListener("click", (e) => {
+                e.stopPropagation();
+                document.querySelectorAll(".card-dropdown.show").forEach(d => {
+                    if (d !== dropdown) d.classList.remove("show");
+                });
+                dropdown.classList.toggle("show");
+            });
+        }
+
+        if (btnEdit) {
+            btnEdit.addEventListener("click", (e) => {
+                e.stopPropagation();
+                dropdown.classList.remove("show");
+                openEditScriptModal(scriptMeta);
+            });
+        }
+
+        if (btnDelete) {
+            btnDelete.addEventListener("click", (e) => {
+                e.stopPropagation();
+                dropdown.classList.remove("show");
+                deleteScript(scriptMeta.id, scriptMeta.title);
+            });
+        }
+    }
+
 
     const cardBottom = document.createElement("div");
     cardBottom.className = "card-bottom";
@@ -327,19 +384,112 @@ if (btnOpenScriptModal && scriptModal) {
     });
 }
 
-if (closeScriptModalBtn && scriptModal) {
-    closeScriptModalBtn.addEventListener("click", () => {
-        scriptModal.style.display = "none";
+// Modal de Edicion de Scripts
+const editScriptModal = document.getElementById("edit-script-modal");
+const closeEditScriptBtn = document.getElementById("close-edit-script-modal");
+const editScriptForm = document.getElementById("edit-script-form");
+const editScriptAlert = document.getElementById("edit-script-alert");
+
+function showEditScriptAlert(msg, isSuccess = false) {
+    if (!editScriptAlert) return;
+    editScriptAlert.textContent = msg;
+    editScriptAlert.style.display = "block";
+    if (isSuccess) {
+        editScriptAlert.style.background = "#ecfdf5";
+        editScriptAlert.style.border = "1px solid rgba(16, 185, 129, 0.3)";
+        editScriptAlert.style.color = "#047857";
+    } else {
+        editScriptAlert.style.background = "#fef2f2";
+        editScriptAlert.style.border = "1px solid rgba(230, 10, 21, 0.25)";
+        editScriptAlert.style.color = "var(--primary)";
+    }
+}
+
+function openEditScriptModal(scriptMeta) {
+    document.getElementById("edit-script-id").value = scriptMeta.id;
+    document.getElementById("edit-script-title").value = scriptMeta.title;
+    document.getElementById("edit-script-desc").value = scriptMeta.description || "";
+    document.getElementById("edit-script-accept").value = scriptMeta.accept || ".xlsx,.xls,.csv";
+    if (editScriptAlert) editScriptAlert.style.display = "none";
+    if (editScriptModal) editScriptModal.style.display = "flex";
+}
+
+if (closeEditScriptBtn && editScriptModal) {
+    closeEditScriptBtn.addEventListener("click", () => {
+        editScriptModal.style.display = "none";
     });
 }
 
-if (scriptModal) {
-    scriptModal.addEventListener("click", (e) => {
-        if (e.target === scriptModal) {
-            scriptModal.style.display = "none";
+window.addEventListener("click", (e) => {
+    if (e.target === editScriptModal) editScriptModal.style.display = "none";
+    if (e.target === scriptModal) scriptModal.style.display = "none";
+    if (!e.target.closest(".card-actions-menu")) {
+        document.querySelectorAll(".card-dropdown.show").forEach(d => d.classList.remove("show"));
+    }
+});
+
+async function deleteScript(scriptId, title) {
+    if (!confirm(`¿Estás seguro de que deseás eliminar el script "${title}"?`)) return;
+
+    try {
+        const response = await fetch(`/api/scripts/${scriptId}`, { method: "DELETE" });
+        const data = await response.json();
+        if (response.ok && data.success) {
+            showToast("success", "Script eliminado", `El script "${title}" fue eliminado.`);
+            init();
+        } else {
+            alert(data.error || "Error al eliminar script.");
+        }
+    } catch (err) {
+        alert("Error de conexión al eliminar.");
+    }
+}
+
+if (editScriptForm) {
+    editScriptForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const id = document.getElementById("edit-script-id").value;
+        const title = document.getElementById("edit-script-title").value.trim();
+        const desc = document.getElementById("edit-script-desc").value.trim();
+        const accept = document.getElementById("edit-script-accept").value.trim() || ".xlsx,.xls,.csv";
+        const submitBtn = editScriptForm.querySelector(".login-btn");
+
+        if (!title) {
+            showEditScriptAlert("El título es obligatorio.");
+            return;
+        }
+
+        const origText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = "<span>Guardando...</span>";
+
+        try {
+            const response = await fetch(`/api/scripts/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, description: desc, accept })
+            });
+
+            const data = await response.json();
+            if (response.ok && data.success) {
+                showEditScriptAlert("Cambios guardados con éxito.", true);
+                showToast("success", "Script actualizado", `El script "${title}" fue actualizado.`);
+                setTimeout(() => {
+                    if (editScriptModal) editScriptModal.style.display = "none";
+                    init();
+                }, 1000);
+            } else {
+                showEditScriptAlert(data.error || "Error al actualizar.");
+            }
+        } catch (err) {
+            showEditScriptAlert("Error de conexión al actualizar.");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = origText;
         }
     });
 }
+
 
 if (createScriptForm) {
     createScriptForm.addEventListener("submit", async (e) => {
