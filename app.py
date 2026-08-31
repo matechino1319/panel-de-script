@@ -104,12 +104,65 @@ IMAGE_OUTPUT_SCRIPTS = {"quitar_fondo"}
 app = Flask(__name__, static_folder=".")
 
 try:
-    from db import init_db, verificar_credenciales, crear_usuario
+    from db import (
+        init_db,
+        verificar_credenciales,
+        crear_usuario,
+        obtener_scripts_custom,
+        guardar_custom_script,
+        obtener_descargas_db,
+        guardar_descarga_db,
+    )
     init_db()
 except Exception as exc:
     print(f"[DB LOAD ERROR]: {exc}")
     verificar_credenciales = None
     crear_usuario = None
+    obtener_scripts_custom = lambda: []
+    guardar_custom_script = lambda *args: (False, "DB no disponible")
+    obtener_descargas_db = lambda: []
+    guardar_descarga_db = lambda *args: (False, "DB no disponible")
+
+
+DEFAULT_DESCARGAS = [
+    {
+        "id": 1,
+        "title": "Analizador de Particiones",
+        "description": "Herramienta de diagnóstico y análisis de almacenamiento de terminales y servidores locales.",
+        "badge": "Paquete ZIP",
+        "filename": "analizador_particiones.zip",
+        "file_size": "11.1 MB",
+        "download_url": "/analizador_particiones.zip",
+    }
+]
+
+
+def get_all_scripts():
+    custom = []
+    if obtener_scripts_custom:
+        try:
+            custom = obtener_scripts_custom()
+        except Exception:
+            custom = []
+    return SCRIPT_CATALOG + custom
+
+
+def get_all_scripts_index():
+    scripts = get_all_scripts()
+    return {item["id"]: item for item in scripts}
+
+
+def format_file_size_bytes(bytes_count):
+    if not bytes_count:
+        return "0 KB"
+    kb = bytes_count / 1024
+    if kb < 1024:
+        return f"{kb:.1f} KB"
+    mb = kb / 1024
+    if mb < 1024:
+        return f"{mb:.1f} MB"
+    gb = mb / 1024
+    return f"{gb:.1f} GB"
 
 
 @app.route("/")
@@ -213,7 +266,6 @@ def api_login():
     if not usuario or not password:
         return jsonify({"error": "Debe ingresar usuario y contraseña"}), 400
 
-
     if not verificar_credenciales:
         return jsonify({"error": "Módulo de base de datos no cargado"}), 500
 
@@ -231,15 +283,126 @@ def api_login():
         return jsonify({"error": error_msg or "Credenciales inválidas"}), 401
 
 
+@app.route("/api/scripts", methods=["GET", "POST"])
+def api_scripts_route():
+    if request.method == "GET":
+        return jsonify({"scripts": get_all_scripts()})
 
-@app.route("/<path:path>")
-def static_files(path):
-    return send_from_directory(str(BASE_DIR), path)
+    # POST: Subir nuevo script
+    title = (request.form.get("title") or "").strip()
+    description = (request.form.get("description") or "").strip()
+    accept_exts = (request.form.get("accept") or ".xlsx,.xls,.csv").strip()
+
+    if not title:
+        return jsonify({"error": "El título del script es obligatorio."}), 400
+
+    if "file" not in request.files:
+        return jsonify({"error": "Debe subir un archivo Python (.py)."}), 400
+
+    script_file = request.files["file"]
+    if not script_file or script_file.filename == "":
+        return jsonify({"error": "No se seleccionó ningún archivo."}), 400
+
+    if not script_file.filename.lower().endswith(".py"):
+        return jsonify({"error": "El archivo del script debe tener extensión .py."}), 400
+
+    clean_name = secure_filename(script_file.filename)
+    if not clean_name.endswith(".py"):
+        clean_name += ".py"
+
+    import re
+    slug = re.sub(r"[^a-zA-Z0-9_]+", "_", title.lower()).strip("_")
+    script_id = f"custom_{slug}_{int(time.time())}"
+    final_script_filename = f"custom_{slug}_{int(time.time())}.py"
+
+    save_path = BASE_DIR / final_script_filename
+    script_file.save(save_path)
+
+    ok, err = guardar_custom_script(
+        script_id=script_id,
+        title=title,
+        description=description,
+        script_filename=final_script_filename,
+        accept_exts=accept_exts,
+    )
+
+    if not ok:
+        return jsonify({"error": f"Error guardando en la base de datos: {err}"}), 500
+
+    new_script_data = {
+        "id": script_id,
+        "title": title,
+        "description": description,
+        "script": final_script_filename,
+        "accept": accept_exts,
+        "is_custom": True,
+    }
+
+    return jsonify({
+        "success": True,
+        "message": "Script creado con éxito.",
+        "script": new_script_data,
+    }), 201
 
 
-@app.route("/api/scripts")
-def scripts():
-    return jsonify({"scripts": SCRIPT_CATALOG})
+@app.route("/api/descargas", methods=["GET", "POST"])
+def api_descargas_route():
+    if request.method == "GET":
+        db_descargas = []
+        if obtener_descargas_db:
+            try:
+                db_descargas = obtener_descargas_db()
+            except Exception:
+                db_descargas = []
+        return jsonify({"descargas": DEFAULT_DESCARGAS + db_descargas})
+
+    # POST: Subir nuevo contenido descargable
+    title = (request.form.get("title") or "").strip()
+    description = (request.form.get("description") or "").strip()
+    badge = (request.form.get("badge") or "Utilidad").strip()
+
+    if not title:
+        return jsonify({"error": "El título del software o archivo es obligatorio."}), 400
+
+    if "file" not in request.files:
+        return jsonify({"error": "Debe adjuntar un archivo para descargar."}), 400
+
+    upload_file = request.files["file"]
+    if not upload_file or upload_file.filename == "":
+        return jsonify({"error": "No se seleccionó ningún archivo."}), 400
+
+    safe_name = secure_filename(upload_file.filename)
+    save_path = BASE_DIR / safe_name
+    upload_file.save(save_path)
+
+    file_size_str = format_file_size_bytes(save_path.stat().st_size)
+    download_url = f"/{safe_name}"
+
+    ok, err = guardar_descarga_db(
+        title=title,
+        description=description,
+        badge=badge,
+        filename=safe_name,
+        file_size=file_size_str,
+        download_url=download_url,
+    )
+
+    if not ok:
+        return jsonify({"error": f"Error guardando descarga en base de datos: {err}"}), 500
+
+    return jsonify({
+        "success": True,
+        "message": "Descarga agregada con éxito.",
+        "descarga": {
+            "title": title,
+            "description": description,
+            "badge": badge,
+            "filename": safe_name,
+            "file_size": file_size_str,
+            "download_url": download_url,
+        },
+    }), 201
+
 
 
 def allowed_file(filename):
@@ -329,7 +492,8 @@ def run_script(script_meta, uploaded_file, extra_files=None):
 @app.route("/api/run", methods=["POST"])
 def run_selected_script():
     script_id = (request.form.get("script_id") or "").strip()
-    if script_id not in SCRIPT_INDEX:
+    scripts_map = get_all_scripts_index()
+    if script_id not in scripts_map:
         return jsonify({"error": "Script no valido"}), 400
 
     if "file" not in request.files:
@@ -342,7 +506,8 @@ def run_selected_script():
     if not allowed_file(uploaded_file.filename):
         return jsonify({"error": "Tipo de archivo no permitido"}), 400
 
-    script_meta = SCRIPT_INDEX[script_id]
+    script_meta = scripts_map[script_id]
+
     extra_files = {}
     for extra in script_meta.get("extra_files", []):
         key = extra["key"]

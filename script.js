@@ -273,6 +273,8 @@ function filterAndRender() {
             matchesCategory = script.accept.includes("xls");
         } else if (activeFilter === "csv") {
             matchesCategory = script.accept.includes("csv");
+        } else if (activeFilter === "custom") {
+            matchesCategory = Boolean(script.is_custom);
         }
 
         return matchesText && matchesCategory;
@@ -286,6 +288,118 @@ function filterAndRender() {
 
     filtered.forEach((scriptMeta) => {
         grid.appendChild(buildCard(scriptMeta));
+    });
+}
+
+// Modal Nuevo Script
+const btnOpenScriptModal = document.getElementById("btn-open-new-script");
+const scriptModal = document.getElementById("new-script-modal");
+const closeScriptModalBtn = document.getElementById("close-script-modal");
+const createScriptForm = document.getElementById("create-script-form");
+const scriptModalAlert = document.getElementById("script-modal-alert");
+
+function showScriptModalAlert(msg, isSuccess = false) {
+    if (!scriptModalAlert) return;
+    scriptModalAlert.textContent = msg;
+    scriptModalAlert.style.display = "block";
+    if (isSuccess) {
+        scriptModalAlert.style.background = "#ecfdf5";
+        scriptModalAlert.style.border = "1px solid rgba(16, 185, 129, 0.3)";
+        scriptModalAlert.style.color = "#047857";
+    } else {
+        scriptModalAlert.style.background = "#fef2f2";
+        scriptModalAlert.style.border = "1px solid rgba(230, 10, 21, 0.25)";
+        scriptModalAlert.style.color = "var(--primary)";
+    }
+}
+
+function hideScriptModalAlert() {
+    if (scriptModalAlert) {
+        scriptModalAlert.style.display = "none";
+        scriptModalAlert.textContent = "";
+    }
+}
+
+if (btnOpenScriptModal && scriptModal) {
+    btnOpenScriptModal.addEventListener("click", () => {
+        hideScriptModalAlert();
+        scriptModal.style.display = "flex";
+    });
+}
+
+if (closeScriptModalBtn && scriptModal) {
+    closeScriptModalBtn.addEventListener("click", () => {
+        scriptModal.style.display = "none";
+    });
+}
+
+if (scriptModal) {
+    scriptModal.addEventListener("click", (e) => {
+        if (e.target === scriptModal) {
+            scriptModal.style.display = "none";
+        }
+    });
+}
+
+if (createScriptForm) {
+    createScriptForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        hideScriptModalAlert();
+
+        const titleInput = document.getElementById("script-title-input");
+        const descInput = document.getElementById("script-desc-input");
+        const acceptInput = document.getElementById("script-accept-input");
+        const fileInput = document.getElementById("script-file-input");
+        const submitBtn = createScriptForm.querySelector(".login-btn");
+
+        if (!titleInput.value.trim()) {
+            showScriptModalAlert("El título es obligatorio.");
+            return;
+        }
+
+        if (!fileInput.files || fileInput.files.length === 0) {
+            showScriptModalAlert("Debe seleccionar un archivo .py");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("title", titleInput.value.trim());
+        formData.append("description", descInput.value.trim());
+        formData.append("accept", acceptInput.value.trim() || ".xlsx,.xls,.csv");
+        formData.append("file", fileInput.files[0]);
+
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = "0.7";
+        submitBtn.innerHTML = "<span>Subiendo script...</span>";
+
+        try {
+            const response = await fetch("/api/scripts", {
+                method: "POST",
+                body: formData
+            });
+
+            let data = null;
+            try { data = await response.json(); } catch (_) {}
+
+            if (response.ok && data && data.success) {
+                showScriptModalAlert("¡Script agregado y publicado con éxito!", true);
+                showToast("success", "Script publicado", `El script '${titleInput.value}' ya está disponible.`);
+                createScriptForm.reset();
+                setTimeout(() => {
+                    if (scriptModal) scriptModal.style.display = "none";
+                    init();
+                }, 1200);
+            } else {
+                showScriptModalAlert((data && data.error) ? data.error : "Error al subir script.");
+            }
+        } catch (err) {
+            showScriptModalAlert("Error de conexión con el servidor.");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = "1";
+            submitBtn.innerHTML = originalText;
+        }
     });
 }
 
@@ -318,3 +432,4 @@ if (filterTags) {
 }
 
 init();
+

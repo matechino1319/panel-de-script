@@ -86,7 +86,7 @@ def get_db_connection():
 
 def init_db():
     """
-    Crea la tabla de usuarios si no existe.
+    Crea las tablas de usuarios, custom_scripts y descargas si no existen.
     """
     try:
         conn, engine = get_db_connection()
@@ -104,6 +104,27 @@ def init_db():
                     ultimo_acceso TIMESTAMP DEFAULT NULL,
                     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
+                
+                CREATE TABLE IF NOT EXISTS custom_scripts (
+                    id SERIAL PRIMARY KEY,
+                    script_id VARCHAR(100) NOT NULL UNIQUE,
+                    title VARCHAR(150) NOT NULL,
+                    description TEXT,
+                    script_file VARCHAR(255) NOT NULL,
+                    accept VARCHAR(255) DEFAULT '.xlsx,.xls,.csv',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE TABLE IF NOT EXISTS descargas (
+                    id SERIAL PRIMARY KEY,
+                    title VARCHAR(150) NOT NULL,
+                    description TEXT,
+                    badge VARCHAR(50) DEFAULT 'Utilidad',
+                    filename VARCHAR(255) NOT NULL,
+                    file_size VARCHAR(50) DEFAULT '',
+                    download_url VARCHAR(255) NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
             """)
             conn.commit()
 
@@ -118,6 +139,29 @@ def init_db():
                     activo BOOLEAN NOT NULL DEFAULT TRUE,
                     ultimo_acceso DATETIME DEFAULT NULL,
                     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS custom_scripts (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    script_id VARCHAR(100) NOT NULL UNIQUE,
+                    title VARCHAR(150) NOT NULL,
+                    description TEXT,
+                    script_file VARCHAR(255) NOT NULL,
+                    accept VARCHAR(255) DEFAULT '.xlsx,.xls,.csv',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS descargas (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    title VARCHAR(150) NOT NULL,
+                    description TEXT,
+                    badge VARCHAR(50) DEFAULT 'Utilidad',
+                    filename VARCHAR(255) NOT NULL,
+                    file_size VARCHAR(50) DEFAULT '',
+                    download_url VARCHAR(255) NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
             """)
             conn.commit()
@@ -135,12 +179,146 @@ def init_db():
                     creado_en TEXT DEFAULT CURRENT_TIMESTAMP
                 );
             """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS custom_scripts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    script_id TEXT NOT NULL UNIQUE,
+                    title TEXT NOT NULL,
+                    description TEXT,
+                    script_file TEXT NOT NULL,
+                    accept TEXT DEFAULT '.xlsx,.xls,.csv',
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS descargas (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    title TEXT NOT NULL,
+                    description TEXT,
+                    badge TEXT DEFAULT 'Utilidad',
+                    filename TEXT NOT NULL,
+                    file_size TEXT DEFAULT '',
+                    download_url TEXT NOT NULL,
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
             conn.commit()
 
         cur.close()
         conn.close()
     except Exception as exc:
         print(f"[DB INIT ERROR]: {exc}")
+
+
+def obtener_scripts_custom():
+    """
+    Retorna la lista de scripts creados dinámicamente.
+    """
+    scripts = []
+    try:
+        conn, engine = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT script_id, title, description, script_file, accept FROM custom_scripts ORDER BY id ASC;")
+        rows = cur.fetchall()
+        for row in rows:
+            if isinstance(row, dict):
+                scripts.append({
+                    "id": row["script_id"],
+                    "title": row["title"],
+                    "script": row["script_file"],
+                    "description": row["description"] or "",
+                    "accept": row["accept"] or ".xlsx,.xls,.csv",
+                    "is_custom": True
+                })
+            else:
+                scripts.append({
+                    "id": row[0],
+                    "title": row[1],
+                    "description": row[2] or "",
+                    "script": row[3],
+                    "accept": row[4] or ".xlsx,.xls,.csv",
+                    "is_custom": True
+                })
+        cur.close()
+        conn.close()
+    except Exception as exc:
+        print(f"[DB GET SCRIPTS ERROR]: {exc}")
+    return scripts
+
+
+def guardar_custom_script(script_id, title, description, script_filename, accept_exts):
+    """
+    Guarda un nuevo script en la base de datos.
+    """
+    try:
+        conn, engine = get_db_connection()
+        cur = conn.cursor()
+        placeholder = "%s" if engine in ("postgres", "mysql") else "?"
+        query = f"""
+            INSERT INTO custom_scripts (script_id, title, description, script_file, accept)
+            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder});
+        """
+        cur.execute(query, (script_id, title, description, script_filename, accept_exts))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True, None
+    except Exception as exc:
+        print(f"[DB SAVE SCRIPT ERROR]: {exc}")
+        return False, str(exc)
+
+
+def obtener_descargas_db():
+    """
+    Retorna todas las descargas registradas en la base de datos.
+    """
+    descargas = []
+    try:
+        conn, engine = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT id, title, description, badge, filename, file_size, download_url FROM descargas ORDER BY id DESC;")
+        rows = cur.fetchall()
+        for row in rows:
+            if isinstance(row, dict):
+                descargas.append(dict(row))
+            else:
+                descargas.append({
+                    "id": row[0],
+                    "title": row[1],
+                    "description": row[2] or "",
+                    "badge": row[3] or "Utilidad",
+                    "filename": row[4],
+                    "file_size": row[5] or "",
+                    "download_url": row[6]
+                })
+        cur.close()
+        conn.close()
+    except Exception as exc:
+        print(f"[DB GET DESCARGAS ERROR]: {exc}")
+    return descargas
+
+
+def guardar_descarga_db(title, description, badge, filename, file_size, download_url):
+    """
+    Guarda una nueva herramienta descargable en la base de datos.
+    """
+    try:
+        conn, engine = get_db_connection()
+        cur = conn.cursor()
+        placeholder = "%s" if engine in ("postgres", "mysql") else "?"
+        query = f"""
+            INSERT INTO descargas (title, description, badge, filename, file_size, download_url)
+            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder});
+        """
+        cur.execute(query, (title, description, badge, filename, file_size, download_url))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True, None
+    except Exception as exc:
+        print(f"[DB SAVE DESCARGA ERROR]: {exc}")
+        return False, str(exc)
+
 
 
 

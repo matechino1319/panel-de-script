@@ -35,46 +35,105 @@
     </header>
 
     <main>
-        <section class="portal-hero">
-            <div class="badge">
-                <span class="badge-dot pulse"></span>
-                <span>Software & Utilidades</span>
+        <section class="portal-hero" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; text-align: left;">
+            <div>
+                <div class="badge">
+                    <span class="badge-dot pulse"></span>
+                    <span>Software & Utilidades</span>
+                </div>
+                <h1>Herramientas <span class="highlight">Descargables</span></h1>
+                <p>Programas, ejecutables y paquetes de instalación local desarrollados y configurados para el equipo.</p>
             </div>
-            <h1>Herramientas <span class="highlight">Descargables</span></h1>
-            <p>Programas, ejecutables y paquetes de instalación local desarrollados y configurados para el equipo.</p>
+            <div>
+                <button type="button" class="primary-btn" id="btn-open-descarga-modal" style="padding: 12px 20px; font-size: 0.95rem; background: linear-gradient(135deg, var(--primary), var(--primary-hover));">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>Subir Nueva Descarga</span>
+                </button>
+            </div>
         </section>
 
-        <section class="portal-grid">
-            <!-- Descarga 1: Analizador de Particiones -->
-            <div class="portal-card" style="cursor: default;">
-                <div class="portal-card-top">
-                    <div class="portal-card-icon">
-                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
-                            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
-                            <line x1="6" y1="6" x2="6.01" y2="6"></line>
-                            <line x1="6" y1="18" x2="6.01" y2="18"></line>
-                        </svg>
-                    </div>
-                    <span class="portal-card-badge">Paquete ZIP</span>
-                </div>
-                <div class="portal-card-body">
-                    <h2 class="portal-card-title">Analizador de Particiones</h2>
-                    <p class="portal-card-desc">Herramienta de diagnóstico y análisis de almacenamiento de terminales y servidores locales.</p>
-                </div>
-                <div style="width: 100%; padding-top: 12px; border-top: 1px solid #f3f4f6;">
-                    <a href="/analizador_particiones.zip" download class="primary-btn" style="width: 100%; justify-content: center; padding: 12px 20px; font-size: 0.95rem;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                        <span>Descargar ZIP (11.1 MB)</span>
-                    </a>
-                </div>
+        <section class="portal-grid" id="descargas-grid">
+            <div class="loading-skeleton-grid" style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px;">
+                <div class="skeleton-card" style="height: 220px; border-radius: var(--radius-lg); background: #f1f5f9;"></div>
+                <div class="skeleton-card" style="height: 220px; border-radius: var(--radius-lg); background: #f1f5f9;"></div>
             </div>
         </section>
     </main>
+
+    <!-- Modal para Subir Nueva Descarga -->
+    <div id="new-descarga-modal" class="user-modal-backdrop" style="display: none;">
+        <div class="user-modal-card" style="max-width: 500px;">
+            <div class="user-modal-header">
+                <h3 class="user-modal-title">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>Subir Nueva Descarga</span>
+                </h3>
+                <button type="button" class="user-modal-close" id="close-descarga-modal">&times;</button>
+            </div>
+
+            <form id="create-descarga-form" class="login-form">
+                <div class="form-group">
+                    <label for="descarga-title-input" class="form-label">Nombre del Software / Herramienta</label>
+                    <div class="input-icon-wrap">
+                        <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                        </svg>
+                        <input type="text" id="descarga-title-input" class="login-input" placeholder="Ej: Lector de Balanzas v2" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="descarga-desc-input" class="form-label">Descripción</label>
+                    <div class="input-icon-wrap">
+                        <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="21" y1="10" x2="3" y2="10"></line>
+                            <line x1="21" y1="6" x2="3" y2="6"></line>
+                            <line x1="21" y1="14" x2="3" y2="14"></line>
+                            <line x1="21" y1="18" x2="3" y2="18"></line>
+                        </svg>
+                        <input type="text" id="descarga-desc-input" class="login-input" placeholder="Detalle de uso e instalación">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="descarga-badge-input" class="form-label">Tipo de Paquete</label>
+                    <div class="input-icon-wrap">
+                        <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                        </svg>
+                        <input type="text" id="descarga-badge-input" class="login-input" value="Paquete ZIP" placeholder="Ej: Paquete ZIP, Instalador EXE, Utilidad">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Archivo para Descargar</label>
+                    <input type="file" id="descarga-file-input" required style="padding: 10px; border: 1px dashed var(--border-color); border-radius: var(--radius-md); background: #f8fafc; font-size: 0.88rem; width: 100%;">
+                </div>
+
+                <button type="submit" class="primary-btn login-btn" style="margin-top: 6px;">
+                    <span>Publicar Descarga</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </button>
+            </form>
+
+            <div id="descarga-modal-alert" style="display: none; margin-top: 14px; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600; text-align: center;"></div>
+        </div>
+    </div>
+
+    <!-- Contenedor para Toast -->
+    <div id="toast-container" class="toast-container"></div>
 
     <footer class="site-footer">
         <div class="footer-content">
@@ -84,5 +143,191 @@
     </footer>
 
     <script src="auth.js"></script>
+    <script>
+        const grid = document.getElementById("descargas-grid");
+        const btnOpen = document.getElementById("btn-open-descarga-modal");
+        const modal = document.getElementById("new-descarga-modal");
+        const closeBtn = document.getElementById("close-descarga-modal");
+        const form = document.getElementById("create-descarga-form");
+        const alertBox = document.getElementById("descarga-modal-alert");
+        const toastContainer = document.getElementById("toast-container");
+
+        function showToast(type, title, message) {
+            if (!toastContainer) return;
+            const toast = document.createElement("div");
+            toast.className = `toast toast-${type}`;
+            const icon = type === "success" 
+                ? `<svg class="toast-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`
+                : `<svg class="toast-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+            toast.innerHTML = `${icon}<div class="toast-content"><div class="toast-title">${title}</div><div class="toast-msg">${message}</div></div>`;
+            toastContainer.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = "0";
+                toast.style.transform = "translateX(100%)";
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function showAlert(msg, isSuccess = false) {
+            if (!alertBox) return;
+            alertBox.textContent = msg;
+            alertBox.style.display = "block";
+            if (isSuccess) {
+                alertBox.style.background = "#ecfdf5";
+                alertBox.style.border = "1px solid rgba(16, 185, 129, 0.3)";
+                alertBox.style.color = "#047857";
+            } else {
+                alertBox.style.background = "#fef2f2";
+                alertBox.style.border = "1px solid rgba(230, 10, 21, 0.25)";
+                alertBox.style.color = "var(--primary)";
+            }
+        }
+
+        function hideAlert() {
+            if (alertBox) {
+                alertBox.style.display = "none";
+                alertBox.textContent = "";
+            }
+        }
+
+        if (btnOpen && modal) {
+            btnOpen.addEventListener("click", () => {
+                hideAlert();
+                modal.style.display = "flex";
+            });
+        }
+
+        if (closeBtn && modal) {
+            closeBtn.addEventListener("click", () => {
+                modal.style.display = "none";
+            });
+        }
+
+        if (modal) {
+            modal.addEventListener("click", (e) => {
+                if (e.target === modal) modal.style.display = "none";
+            });
+        }
+
+        function renderDownloads(list) {
+            if (!grid) return;
+            grid.innerHTML = "";
+
+            if (!list || list.length === 0) {
+                grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">No hay descargas disponibles actualmente.</div>`;
+                return;
+            }
+
+            list.forEach((item) => {
+                const card = document.createElement("div");
+                card.className = "portal-card";
+                card.style.cursor = "default";
+                card.innerHTML = `
+                    <div class="portal-card-top">
+                        <div class="portal-card-icon">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                                <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                                <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                            </svg>
+                        </div>
+                        <span class="portal-card-badge">${item.badge || "Paquete"}</span>
+                    </div>
+                    <div class="portal-card-body">
+                        <h2 class="portal-card-title">${item.title}</h2>
+                        <p class="portal-card-desc">${item.description || "Herramienta disponible para descarga."}</p>
+                    </div>
+                    <div style="width: 100%; padding-top: 12px; border-top: 1px solid #f3f4f6;">
+                        <a href="${item.download_url}" download="${item.filename}" class="primary-btn" style="width: 100%; justify-content: center; padding: 12px 20px; font-size: 0.95rem;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            <span>Descargar (${item.file_size || "Archivo"})</span>
+                        </a>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        async function fetchDescargas() {
+            try {
+                const res = await fetch("/api/descargas");
+                if (!res.ok) throw new Error("Error al consultar descargas");
+                const data = await res.json();
+                renderDownloads(data.descargas || []);
+            } catch (err) {
+                if (grid) {
+                    grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:30px; color:var(--rose);">Error cargando descargas: ${err.message}</div>`;
+                }
+            }
+        }
+
+        if (form) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                hideAlert();
+
+                const title = document.getElementById("descarga-title-input").value.trim();
+                const desc = document.getElementById("descarga-desc-input").value.trim();
+                const badge = document.getElementById("descarga-badge-input").value.trim() || "Utilidad";
+                const fileInput = document.getElementById("descarga-file-input");
+                const submitBtn = form.querySelector(".login-btn");
+
+                if (!title) {
+                    showAlert("El título es obligatorio.");
+                    return;
+                }
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    showAlert("Debe seleccionar un archivo para subir.");
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append("title", title);
+                formData.append("description", desc);
+                formData.append("badge", badge);
+                formData.append("file", fileInput.files[0]);
+
+                const origText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = "0.7";
+                submitBtn.innerHTML = "<span>Subiendo archivo...</span>";
+
+                try {
+                    const response = await fetch("/api/descargas", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    let data = null;
+                    try { data = await response.json(); } catch (_) {}
+
+                    if (response.ok && data && data.success) {
+                        showAlert("¡Descarga agregada y publicada con éxito!", true);
+                        showToast("success", "Descarga disponible", `El archivo '${title}' fue publicado.`);
+                        form.reset();
+                        setTimeout(() => {
+                            if (modal) modal.style.display = "none";
+                            fetchDescargas();
+                        }, 1200);
+                    } else {
+                        showAlert((data && data.error) ? data.error : "Error al subir la descarga.");
+                    }
+                } catch (err) {
+                    showAlert("Error de conexión al subir la descarga.");
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = "1";
+                    submitBtn.innerHTML = origText;
+                }
+            });
+        }
+
+        fetchDescargas();
+    </script>
 </body>
 </html>
