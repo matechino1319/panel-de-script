@@ -406,19 +406,20 @@ def api_descargas_route():
         return jsonify({"descargas": DEFAULT_DESCARGAS + db_descargas})
 
     # POST: Subir nuevo contenido descargable
-    title = (request.form.get("title") or "").strip()
-    description = (request.form.get("description") or "").strip()
-    badge = (request.form.get("badge") or "Utilidad").strip()
-    external_url = (request.form.get("external_url") or request.form.get("download_url") or "").strip()
+    data = request.get_json(silent=True) or request.form
+    title = (data.get("title") or "").strip()
+    description = (data.get("description") or "").strip()
+    badge = (data.get("badge") or "Paquete ZIP").strip()
+    external_url = (data.get("external_url") or data.get("download_url") or "").strip()
 
     if not title:
-        return jsonify({"error": "El título del software o archivo es obligatorio."}), 400
+        return jsonify({"error": "El nombre del archivo o herramienta es obligatorio."}), 400
 
-    upload_file = request.files.get("file")
+    upload_file = request.files.get("file") if request.files else None
     has_file = upload_file and upload_file.filename != ""
 
     if not has_file and not external_url:
-        return jsonify({"error": "Debe adjuntar un archivo o ingresar un enlace de descarga."}), 400
+        return jsonify({"error": "Debe ingresar el enlace de descarga o adjuntar un archivo."}), 400
 
     if has_file:
         safe_name = secure_filename(upload_file.filename)
@@ -428,7 +429,7 @@ def api_descargas_route():
     else:
         safe_name = f"{title}.zip"
         file_bytes = None
-        file_size_str = (request.form.get("file_size") or "Enlace").strip()
+        file_size_str = (data.get("file_size") or "Enlace").strip()
         download_url = external_url
 
     ok, inserted_id_or_err = guardar_descarga_db(
@@ -440,6 +441,7 @@ def api_descargas_route():
         download_url=download_url,
         file_bytes=file_bytes,
     )
+
 
     if not ok:
         return jsonify({"error": f"Error guardando descarga en base de datos: {inserted_id_or_err}"}), 500
