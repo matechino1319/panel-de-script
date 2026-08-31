@@ -520,6 +520,82 @@ def crear_usuario(usuario: str, nombre_completo: str, password_raw: str, rol: st
         return None, f"Error al guardar usuario en la base de datos: {exc}"
 
 
+def cambiar_password_usuario(usuario: str, nueva_password_raw: str):
+    """
+    Actualiza la contraseña de un usuario en la base de datos.
+    Retorna (True, None) o (False, error_msg).
+    """
+    clean_user = (usuario or "").strip()
+    if not clean_user:
+        return False, "Debe especificar el usuario."
+    if not nueva_password_raw or len(nueva_password_raw) < 4:
+        return False, "La nueva contraseña debe tener al menos 4 caracteres."
+
+    new_hash = generate_password_hash(nueva_password_raw)
+
+    try:
+        conn, engine = get_db_connection()
+        cur = conn.cursor()
+
+        if engine == "postgres":
+            cur.execute(
+                """
+                UPDATE usuarios 
+                SET password_hash = %s 
+                WHERE LOWER(TRIM(usuario)) = LOWER(TRIM(%s)) 
+                   OR LOWER(TRIM(nombre_completo)) = LOWER(TRIM(%s));
+                """,
+                (new_hash, clean_user, clean_user)
+            )
+            affected = cur.rowcount
+            conn.commit()
+            cur.close()
+            conn.close()
+            if affected == 0:
+                return False, f"Usuario '{clean_user}' no encontrado."
+            return True, None
+
+        elif engine == "mysql":
+            cur.execute(
+                """
+                UPDATE usuarios 
+                SET password_hash = %s 
+                WHERE LOWER(TRIM(usuario)) = LOWER(TRIM(%s)) 
+                   OR LOWER(TRIM(nombre_completo)) = LOWER(TRIM(%s));
+                """,
+                (new_hash, clean_user, clean_user)
+            )
+            affected = cur.rowcount
+            conn.commit()
+            cur.close()
+            conn.close()
+            if affected == 0:
+                return False, f"Usuario '{clean_user}' no encontrado."
+            return True, None
+
+        else:  # sqlite
+            cur.execute(
+                """
+                UPDATE usuarios 
+                SET password_hash = ? 
+                WHERE LOWER(TRIM(usuario)) = LOWER(TRIM(?)) 
+                   OR LOWER(TRIM(nombre_completo)) = LOWER(TRIM(?));
+                """,
+                (new_hash, clean_user, clean_user)
+            )
+            affected = cur.rowcount
+            conn.commit()
+            cur.close()
+            conn.close()
+            if affected == 0:
+                return False, f"Usuario '{clean_user}' no encontrado."
+            return True, None
+
+    except Exception as exc:
+        print(f"[DB CHANGE PASSWORD ERROR]: {exc}")
+        return False, f"Error al cambiar contraseña en la base de datos: {exc}"
+
+
 
 def verificar_credenciales(username: str, password_raw: str):
     """

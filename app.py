@@ -108,6 +108,7 @@ try:
         init_db,
         verificar_credenciales,
         crear_usuario,
+        cambiar_password_usuario,
         obtener_scripts_custom,
         guardar_custom_script,
         obtener_descargas_db,
@@ -118,10 +119,12 @@ except Exception as exc:
     print(f"[DB LOAD ERROR]: {exc}")
     verificar_credenciales = None
     crear_usuario = None
+    cambiar_password_usuario = None
     obtener_scripts_custom = lambda: []
     guardar_custom_script = lambda *args: (False, "DB no disponible")
     obtener_descargas_db = lambda: []
     guardar_descarga_db = lambda *args: (False, "DB no disponible")
+
 
 
 DEFAULT_DESCARGAS = [
@@ -281,6 +284,31 @@ def api_login():
         })
     else:
         return jsonify({"error": error_msg or "Credenciales inválidas"}), 401
+
+
+@app.route("/api/cambiar-password", methods=["POST"])
+def api_cambiar_password():
+    data = request.get_json(silent=True) or request.form
+    usuario = (data.get("usuario") or data.get("username") or "").strip()
+    nueva_password = (data.get("password") or data.get("nueva_password") or "").strip()
+
+    if not usuario:
+        return jsonify({"error": "El nombre de usuario es obligatorio"}), 400
+    if not nueva_password:
+        return jsonify({"error": "La nueva contraseña es obligatoria"}), 400
+
+    if not cambiar_password_usuario:
+        return jsonify({"error": "Módulo de base de datos no disponible"}), 500
+
+    ok, err = cambiar_password_usuario(usuario, nueva_password)
+    if not ok:
+        return jsonify({"error": err or "No se pudo actualizar la contraseña"}), 400
+
+    return jsonify({
+        "success": True,
+        "message": f"Contraseña del usuario '{usuario}' actualizada con éxito."
+    })
+
 
 
 @app.route("/api/scripts", methods=["GET", "POST"])
