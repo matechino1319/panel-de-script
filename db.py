@@ -47,40 +47,63 @@ def get_db_connection():
         conn.row_factory = sqlite3.Row
         return conn, "sqlite"
 
-    parsed = urlparse(db_url)
-    scheme = parsed.scheme.lower()
+    # Limpiar espacios o comillas accidentales
+    db_url = db_url.strip().strip("'\"")
 
-    if "postgres" in scheme:
+    # Detección directa de PostgreSQL
+    if db_url.startswith(("postgres://", "postgresql://")):
         import psycopg2
         import psycopg2.extras
 
-        if "sslmode=" not in db_url.lower():
-            conn = psycopg2.connect(db_url, sslmode="require")
-        else:
-            conn = psycopg2.connect(db_url)
-        return conn, "postgres"
+        # Normalizar postgres:// a postgresql:// para compatibilidad con psycopg2
+        if db_url.startswith("postgres://"):
+            db_url = "postgresql://" + db_url[len("postgres://"):]
 
-    elif "mysql" in scheme:
+        try:
+            if "sslmode=" not in db_url.lower():
+                if "?" in db_url:
+                    db_url_with_ssl = db_url + "&sslmode=require"
+                else:
+                    db_url_with_ssl = db_url + "?sslmode=require"
+                conn = psycopg2.connect(db_url_with_ssl)
+            else:
+                conn = psycopg2.connect(db_url)
+            return conn, "postgres"
+        except Exception as pg_err:
+            # Reintentar sin forzar sslmode en la URL si falló
+            try:
+                conn = psycopg2.connect(db_url)
+                return conn, "postgres"
+            except Exception:
+                raise pg_err
+
+    # Detección de MySQL
+    elif db_url.startswith(("mysql://", "mysql2://")):
         import pymysql
         import pymysql.cursors
 
-        port = parsed.port or 3306
-        db_name = parsed.path.lstrip("/")
-        conn = pymysql.connect(
-            host=parsed.hostname,
-            user=parsed.username,
-            password=parsed.password,
-            port=port,
-            database=db_name,
-            cursorclass=pymysql.cursors.DictCursor,
-            ssl={"ssl": {}} if "ssl" in db_url.lower() else None,
-        )
-        return conn, "mysql"
+        try:
+            parsed = urlparse(db_url)
+            port = parsed.port or 3306
+            db_name = parsed.path.lstrip("/")
+            conn = pymysql.connect(
+                host=parsed.hostname,
+                user=parsed.username,
+                password=parsed.password,
+                port=port,
+                database=db_name,
+                cursorclass=pymysql.cursors.DictCursor,
+                ssl={"ssl": {}} if "ssl" in db_url.lower() else None,
+            )
+            return conn, "mysql"
+        except Exception as my_err:
+            raise my_err
 
     else:
         conn = sqlite3.connect(get_sqlite_path())
         conn.row_factory = sqlite3.Row
         return conn, "sqlite"
+
 
 
 
