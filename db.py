@@ -3,13 +3,31 @@ import sqlite3
 from urllib.parse import urlparse
 from werkzeug.security import check_password_hash, generate_password_hash
 
-# Obtener URL de conexión desde variables de entorno
-DATABASE_URL = (
-    os.getenv("DATABASE_URL")
-    or os.getenv("POSTGRES_URL")
-    or os.getenv("MYSQL_URL")
-    or ""
-).strip()
+def get_database_url():
+    # Leer .env si existe en local
+    env_path = os.path.join(os.path.dirname(__file__), ".env")
+    if os.path.isfile(env_path):
+        try:
+            with open(env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, v = line.split("=", 1)
+                        k = k.strip()
+                        v = v.strip().strip("'\"")
+                        if k and k not in os.environ:
+                            os.environ[k] = v
+        except Exception:
+            pass
+
+    return (
+        os.getenv("DATABASE_URL")
+        or os.getenv("POSTGRES_URL")
+        or os.getenv("POSTGRES_PRISMA_URL")
+        or os.getenv("POSTGRES_URL_NON_POOLING")
+        or os.getenv("MYSQL_URL")
+        or ""
+    ).strip()
 
 
 def get_sqlite_path():
@@ -23,21 +41,23 @@ def get_db_connection():
     Retorna una conexión a la base de datos según la variable DATABASE_URL.
     Si no hay variable de entorno, usa SQLite local como fallback.
     """
-    if not DATABASE_URL:
-        # Fallback a SQLite local
+    db_url = get_database_url()
+    if not db_url:
         conn = sqlite3.connect(get_sqlite_path())
         conn.row_factory = sqlite3.Row
         return conn, "sqlite"
 
-    parsed = urlparse(DATABASE_URL)
+    parsed = urlparse(db_url)
     scheme = parsed.scheme.lower()
 
     if "postgres" in scheme:
         import psycopg2
         import psycopg2.extras
 
-        # Ajuste para conexiones SSL en proveedores como Supabase o Neon
-        conn = psycopg2.connect(DATABASE_URL, sslmode="require")
+        if "sslmode=" not in db_url.lower():
+            conn = psycopg2.connect(db_url, sslmode="require")
+        else:
+            conn = psycopg2.connect(db_url)
         return conn, "postgres"
 
     elif "mysql" in scheme:
@@ -53,7 +73,7 @@ def get_db_connection():
             port=port,
             database=db_name,
             cursorclass=pymysql.cursors.DictCursor,
-            ssl={"ssl": {}} if "ssl" in DATABASE_URL.lower() else None,
+            ssl={"ssl": {}} if "ssl" in db_url.lower() else None,
         )
         return conn, "mysql"
 
@@ -61,6 +81,7 @@ def get_db_connection():
         conn = sqlite3.connect(get_sqlite_path())
         conn.row_factory = sqlite3.Row
         return conn, "sqlite"
+
 
 
 def init_db():
