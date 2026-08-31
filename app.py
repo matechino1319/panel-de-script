@@ -404,6 +404,10 @@ def api_descargas_route():
     }), 201
 
 
+@app.route("/<path:path>")
+def static_files(path):
+    return send_from_directory(str(BASE_DIR), path)
+
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
