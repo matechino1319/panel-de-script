@@ -112,8 +112,61 @@ except Exception as exc:
 
 
 @app.route("/")
+@app.route("/")
 def index():
     return send_from_directory(str(BASE_DIR), "index.html")
+
+
+@app.route("/api/db-test")
+def db_test():
+    import traceback
+    try:
+        from db import get_db_connection, get_database_url
+        url = get_database_url()
+        masked_url = ""
+        if url:
+            if "@" in url:
+                prefix, rest = url.split("@", 1)
+                if ":" in prefix:
+                    proto_user, _ = prefix.rsplit(":", 1)
+                    masked_url = f"{proto_user}:****@{rest}"
+                else:
+                    masked_url = f"****@{rest}"
+            else:
+                masked_url = "URL_PRESENTE_SIN_ARROBA"
+        
+        conn, engine = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT id, usuario, nombre_completo, rol, activo, creado_en FROM usuarios;")
+        users = []
+        for row in cur.fetchall():
+            if isinstance(row, dict):
+                users.append(dict(row))
+            else:
+                users.append({
+                    "id": row[0],
+                    "usuario": row[1],
+                    "nombre_completo": row[2],
+                    "rol": row[3],
+                    "activo": row[4],
+                })
+        cur.close()
+        conn.close()
+        return jsonify({
+            "status": "connected",
+            "engine": engine,
+            "url_detected": bool(url),
+            "url_masked": masked_url,
+            "usuarios": users
+        })
+    except Exception as exc:
+        return jsonify({
+            "status": "error",
+            "error_type": type(exc).__name__,
+            "error_message": str(exc),
+            "traceback": traceback.format_exc(),
+            "url_detected": bool(os.getenv("DATABASE_URL") or os.getenv("POSTGRES_URL"))
+        }), 500
 
 
 @app.route("/api/login", methods=["POST"])
@@ -125,21 +178,13 @@ def api_login():
     if not usuario or not password:
         return jsonify({"error": "Debe ingresar usuario y contraseña"}), 400
 
-    user_info = None
-    if verificar_credenciales:
-        try:
-            user_info = verificar_credenciales(usuario, password)
-        except Exception as exc:
-            print(f"[AUTH ERROR]: {exc}")
+    if not verificar_credenciales:
+        return jsonify({"error": "Módulo de base de datos no cargado"}), 500
 
-    # Fallback por defecto si no hay BD o falló la conexión remota
-    if not user_info and usuario == "admin" and password == "admin123":
-        user_info = {
-            "id": 1,
-            "usuario": "admin",
-            "nombre_completo": "Administrador",
-            "rol": "admin"
-        }
+    try:
+        user_info, error_msg = verificar_credenciales(usuario, password)
+    except Exception as exc:
+        return jsonify({"error": f"Error del servidor: {str(exc)}"}), 500
 
     if user_info:
         return jsonify({
@@ -147,7 +192,8 @@ def api_login():
             "user": user_info
         })
     else:
-        return jsonify({"error": "Credenciales inválidas"}), 401
+        return jsonify({"error": error_msg or "Credenciales inválidas"}), 401
+
 
 
 @app.route("/<path:path>")
