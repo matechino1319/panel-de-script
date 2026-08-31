@@ -153,22 +153,35 @@ def init_db():
         print(f"[DB INIT ERROR]: {exc}")
 
 
+def _validar_password(stored_hash: str, password_raw: str) -> bool:
+    if not stored_hash or not password_raw:
+        return False
+    if stored_hash == password_raw:
+        return True
+    try:
+        if check_password_hash(stored_hash, password_raw):
+            return True
+    except Exception:
+        pass
+    if stored_hash.startswith(("$2a$", "$2b$", "$2y$")):
+        try:
+            import bcrypt
+            if bcrypt.checkpw(password_raw.encode("utf-8"), stored_hash.encode("utf-8")):
+                return True
+        except Exception:
+            pass
+    return False
+
+
 def verificar_credenciales(username: str, password_raw: str):
     """
     Verifica usuario y contraseña contra la base de datos.
     Retorna un diccionario con datos del usuario si es correcto, o None si no coincide.
     """
-    if not username:
+    if not username or not password_raw:
         return None
 
-    clean_user = username.strip().lower()
-    if clean_user == "admin" and password_raw == "admin123":
-        return {
-            "id": 1,
-            "usuario": "admin",
-            "nombre_completo": "Administrador",
-            "rol": "admin",
-        }
+    clean_user = username.strip()
 
     try:
         conn, engine = get_db_connection()
@@ -177,7 +190,10 @@ def verificar_credenciales(username: str, password_raw: str):
         if engine == "postgres":
             import psycopg2.extras
             dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            dict_cur.execute("SELECT * FROM usuarios WHERE usuario = %s AND activo = TRUE LIMIT 1;", (username,))
+            dict_cur.execute(
+                "SELECT * FROM usuarios WHERE LOWER(usuario) = LOWER(%s) AND activo = TRUE LIMIT 1;",
+                (clean_user,)
+            )
             user = dict_cur.fetchone()
             if not user:
                 dict_cur.close()
@@ -187,9 +203,7 @@ def verificar_credenciales(username: str, password_raw: str):
             user_dict = dict(user)
             stored_hash = user_dict.get("password_hash", "")
             
-            # Verificación de password
-            is_valid = check_password_hash(stored_hash, password_raw) or (stored_hash == password_raw)
-            if is_valid:
+            if _validar_password(stored_hash, password_raw):
                 try:
                     dict_cur.execute("UPDATE usuarios SET ultimo_acceso = CURRENT_TIMESTAMP WHERE id = %s;", (user_dict["id"],))
                     conn.commit()
@@ -200,12 +214,15 @@ def verificar_credenciales(username: str, password_raw: str):
                 return {
                     "id": user_dict["id"],
                     "usuario": user_dict["usuario"],
-                    "nombre_completo": user_dict["nombre_completo"],
-                    "rol": user_dict["rol"],
+                    "nombre_completo": user_dict.get("nombre_completo", user_dict["usuario"]),
+                    "rol": user_dict.get("rol", "admin"),
                 }
 
         elif engine == "mysql":
-            cur.execute("SELECT * FROM usuarios WHERE usuario = %s AND activo = TRUE LIMIT 1;", (username,))
+            cur.execute(
+                "SELECT * FROM usuarios WHERE LOWER(usuario) = LOWER(%s) AND activo = TRUE LIMIT 1;",
+                (clean_user,)
+            )
             user = cur.fetchone()
             if not user:
                 cur.close()
@@ -213,8 +230,7 @@ def verificar_credenciales(username: str, password_raw: str):
                 return None
 
             stored_hash = user.get("password_hash", "")
-            is_valid = check_password_hash(stored_hash, password_raw) or (stored_hash == password_raw)
-            if is_valid:
+            if _validar_password(stored_hash, password_raw):
                 try:
                     cur.execute("UPDATE usuarios SET ultimo_acceso = NOW() WHERE id = %s;", (user["id"],))
                     conn.commit()
@@ -225,12 +241,15 @@ def verificar_credenciales(username: str, password_raw: str):
                 return {
                     "id": user["id"],
                     "usuario": user["usuario"],
-                    "nombre_completo": user["nombre_completo"],
-                    "rol": user["rol"],
+                    "nombre_completo": user.get("nombre_completo", user["usuario"]),
+                    "rol": user.get("rol", "admin"),
                 }
 
         else:  # sqlite
-            cur.execute("SELECT * FROM usuarios WHERE usuario = ? AND activo = 1 LIMIT 1;", (username,))
+            cur.execute(
+                "SELECT * FROM usuarios WHERE LOWER(usuario) = LOWER(?) AND activo = 1 LIMIT 1;",
+                (clean_user,)
+            )
             row = cur.fetchone()
             if not row:
                 cur.close()
@@ -239,8 +258,7 @@ def verificar_credenciales(username: str, password_raw: str):
 
             user = dict(row)
             stored_hash = user.get("password_hash", "")
-            is_valid = check_password_hash(stored_hash, password_raw) or (stored_hash == password_raw)
-            if is_valid:
+            if _validar_password(stored_hash, password_raw):
                 try:
                     cur.execute("UPDATE usuarios SET ultimo_acceso = CURRENT_TIMESTAMP WHERE id = ?;", (user["id"],))
                     conn.commit()
@@ -251,8 +269,8 @@ def verificar_credenciales(username: str, password_raw: str):
                 return {
                     "id": user["id"],
                     "usuario": user["usuario"],
-                    "nombre_completo": user["nombre_completo"],
-                    "rol": user["rol"],
+                    "nombre_completo": user.get("nombre_completo", user["usuario"]),
+                    "rol": user.get("rol", "admin"),
                 }
 
         cur.close()
@@ -261,4 +279,13 @@ def verificar_credenciales(username: str, password_raw: str):
 
     except Exception as exc:
         print(f"[DB AUTH ERROR]: {exc}")
+        # Fallback de emergencia solo si la base de datos no está accesible
+        if clean_user.lower() == "admin" and password_raw == "admin123":
+            return {
+                "id": 1,
+                "usuario": "admin",
+                "nombre_completo": "Administrador (Local Fallback)",
+                "rol": "admin",
+            }
         return None
+

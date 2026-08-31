@@ -91,6 +91,7 @@
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
             errorDiv.style.display = "none";
+            errorDiv.textContent = "";
             
             const username = usernameInput.value.trim();
             const password = passwordInput.value.trim();
@@ -102,8 +103,10 @@
                 return;
             }
 
+            const originalBtnText = submitBtn.innerHTML;
             submitBtn.disabled = true;
             submitBtn.style.opacity = "0.7";
+            submitBtn.innerHTML = "<span>Verificando...</span>";
 
             try {
                 const response = await fetch("/api/login", {
@@ -120,26 +123,21 @@
                 }
 
                 if (response.ok && data && data.success) {
-                    loginUser(data.user.nombre_completo || data.user.usuario || username, remember);
-                    window.location.href = "index.html";
-                } else if (username.toLowerCase() === "admin" && password === "admin123") {
-                    loginUser("Administrador", remember);
+                    const displayName = data.user.nombre_completo || data.user.usuario || username;
+                    loginUser(displayName, remember);
                     window.location.href = "index.html";
                 } else {
-                    errorDiv.textContent = (data && data.error) ? data.error : "Credenciales incorrectas.";
+                    const errorMsg = (data && data.error) ? data.error : "Credenciales incorrectas.";
+                    errorDiv.textContent = errorMsg;
                     errorDiv.style.display = "block";
                 }
             } catch (err) {
-                if (username.toLowerCase() === "admin" && password === "admin123") {
-                    loginUser("Administrador", remember);
-                    window.location.href = "index.html";
-                } else {
-                    loginUser(username || "Operador", remember);
-                    window.location.href = "index.html";
-                }
+                errorDiv.textContent = "Error de conexión con el servidor. Verificá que el backend esté activo.";
+                errorDiv.style.display = "block";
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.style.opacity = "1";
+                submitBtn.innerHTML = originalBtnText;
             }
         });
     </script>
