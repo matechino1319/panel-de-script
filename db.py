@@ -544,8 +544,13 @@ def verificar_credenciales(username: str, password_raw: str):
             import psycopg2.extras
             dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             dict_cur.execute(
-                "SELECT * FROM usuarios WHERE LOWER(usuario) = LOWER(%s) AND activo = TRUE LIMIT 1;",
-                (clean_user,)
+                """
+                SELECT * FROM usuarios 
+                WHERE (LOWER(TRIM(usuario)) = LOWER(TRIM(%s)) OR LOWER(TRIM(nombre_completo)) = LOWER(TRIM(%s)))
+                  AND (activo IS NULL OR activo = TRUE)
+                LIMIT 1;
+                """,
+                (clean_user, clean_user)
             )
             user = dict_cur.fetchone()
             if not user:
@@ -577,8 +582,13 @@ def verificar_credenciales(username: str, password_raw: str):
 
         elif engine == "mysql":
             cur.execute(
-                "SELECT * FROM usuarios WHERE LOWER(usuario) = LOWER(%s) AND activo = TRUE LIMIT 1;",
-                (clean_user,)
+                """
+                SELECT * FROM usuarios 
+                WHERE (LOWER(TRIM(usuario)) = LOWER(TRIM(%s)) OR LOWER(TRIM(nombre_completo)) = LOWER(TRIM(%s)))
+                  AND (activo IS NULL OR activo = 1 OR activo = TRUE)
+                LIMIT 1;
+                """,
+                (clean_user, clean_user)
             )
             user = cur.fetchone()
             if not user:
@@ -608,8 +618,13 @@ def verificar_credenciales(username: str, password_raw: str):
 
         else:  # sqlite
             cur.execute(
-                "SELECT * FROM usuarios WHERE LOWER(usuario) = LOWER(?) AND activo = 1 LIMIT 1;",
-                (clean_user,)
+                """
+                SELECT * FROM usuarios 
+                WHERE (LOWER(TRIM(usuario)) = LOWER(TRIM(?)) OR LOWER(TRIM(nombre_completo)) = LOWER(TRIM(?)))
+                  AND (activo IS NULL OR activo = 1)
+                LIMIT 1;
+                """,
+                (clean_user, clean_user)
             )
             row = cur.fetchone()
             if not row:
@@ -618,6 +633,7 @@ def verificar_credenciales(username: str, password_raw: str):
                 return None, f"Usuario '{clean_user}' no encontrado en base de datos local"
 
             user = dict(row)
+
             stored_hash = user.get("password_hash", "")
             if _validar_password(stored_hash, password_raw):
                 try:
