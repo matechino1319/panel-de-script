@@ -410,8 +410,12 @@
 
                         if (!sbUploadRes.ok) {
                             const errBody = await sbUploadRes.text();
-                            throw new Error(`Error de Supabase Storage (${sbUploadRes.status}): ${errBody || "Verificá que el bucket 'descargas' sea público"}`);
+                            if (sbUploadRes.status === 400 || sbUploadRes.status === 413 || errBody.includes("EntityTooLarge")) {
+                                throw new Error("El archivo supera el límite de tamaño del bucket de Supabase (hasta 50 MB en Supabase). Aumentá el límite en la configuración del bucket en Supabase o usá la pestaña '🔗 Pegar Enlace Externo' (Google Drive / OneDrive).");
+                            }
+                            throw new Error(`Error de Supabase Storage (${sbUploadRes.status}): ${errBody}`);
                         }
+
 
                         finalDownloadUrl = `${SUPABASE_PROJECT_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/${encodeURIComponent(cleanName)}`;
 
