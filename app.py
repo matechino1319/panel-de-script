@@ -127,6 +127,15 @@ except Exception as exc:
 
 
 
+def get_upload_dir():
+    if os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME"):
+        d = Path("/tmp/uploads")
+    else:
+        d = BASE_DIR / "uploads"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
 DEFAULT_DESCARGAS = [
     {
         "id": 1,
@@ -135,9 +144,10 @@ DEFAULT_DESCARGAS = [
         "badge": "Paquete ZIP",
         "filename": "analizador_particiones.zip",
         "file_size": "11.1 MB",
-        "download_url": "/analizador_particiones.zip",
+        "download_url": "/api/download/analizador_particiones.zip",
     }
 ]
+
 
 
 def get_all_scripts():
@@ -343,7 +353,7 @@ def api_scripts_route():
     script_id = f"custom_{slug}_{int(time.time())}"
     final_script_filename = f"custom_{slug}_{int(time.time())}.py"
 
-    save_path = BASE_DIR / final_script_filename
+    save_path = get_upload_dir() / final_script_filename
     script_file.save(save_path)
 
     ok, err = guardar_custom_script(
@@ -400,11 +410,11 @@ def api_descargas_route():
         return jsonify({"error": "No se seleccionó ningún archivo."}), 400
 
     safe_name = secure_filename(upload_file.filename)
-    save_path = BASE_DIR / safe_name
+    save_path = get_upload_dir() / safe_name
     upload_file.save(save_path)
 
     file_size_str = format_file_size_bytes(save_path.stat().st_size)
-    download_url = f"/{safe_name}"
+    download_url = f"/api/download/{safe_name}"
 
     ok, err = guardar_descarga_db(
         title=title,
@@ -432,8 +442,25 @@ def api_descargas_route():
     }), 201
 
 
+@app.route("/api/download/<path:filename>")
+def download_file_route(filename):
+    clean_name = secure_filename(filename)
+    target_upload = get_upload_dir() / clean_name
+    if target_upload.is_file():
+        return send_file(str(target_upload), as_attachment=True, download_name=clean_name)
+
+    target_base = BASE_DIR / clean_name
+    if target_base.is_file():
+        return send_file(str(target_base), as_attachment=True, download_name=clean_name)
+
+    return jsonify({"error": "Archivo no encontrado para descarga"}), 404
+
+
 @app.route("/<path:path>")
 def static_files(path):
+    upload_target = get_upload_dir() / path
+    if upload_target.is_file():
+        return send_file(str(upload_target))
     return send_from_directory(str(BASE_DIR), path)
 
 
@@ -488,7 +515,11 @@ def run_script(script_meta, uploaded_file, extra_files=None):
             env[f"SCRIPT_{key.upper()}"] = str(extra_path)
 
     started_at = time.time()
-    script_path = BASE_DIR / script_meta["script"]
+    
+    script_path = get_upload_dir() / script_meta["script"]
+    if not script_path.is_file():
+        script_path = BASE_DIR / script_meta["script"]
+
 
     result = subprocess.run(
         [sys.executable, str(script_path)],
