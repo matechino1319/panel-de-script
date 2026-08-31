@@ -409,28 +409,27 @@ def api_descargas_route():
     title = (request.form.get("title") or "").strip()
     description = (request.form.get("description") or "").strip()
     badge = (request.form.get("badge") or "Utilidad").strip()
+    external_url = (request.form.get("external_url") or request.form.get("download_url") or "").strip()
 
     if not title:
         return jsonify({"error": "El título del software o archivo es obligatorio."}), 400
 
-    if "file" not in request.files:
-        return jsonify({"error": "Debe adjuntar un archivo para descargar."}), 400
+    upload_file = request.files.get("file")
+    has_file = upload_file and upload_file.filename != ""
 
-    upload_file = request.files["file"]
-    if not upload_file or upload_file.filename == "":
-        return jsonify({"error": "No se seleccionó ningún archivo."}), 400
+    if not has_file and not external_url:
+        return jsonify({"error": "Debe adjuntar un archivo o ingresar un enlace de descarga."}), 400
 
-    safe_name = secure_filename(upload_file.filename)
-    file_bytes = upload_file.read()
-    file_size_str = format_file_size_bytes(len(file_bytes))
-    download_url = f"/api/download/{safe_name}"
-
-    try:
-        save_path = get_upload_dir() / safe_name
-        upload_file.seek(0)
-        upload_file.save(save_path)
-    except Exception:
-        pass
+    if has_file:
+        safe_name = secure_filename(upload_file.filename)
+        file_bytes = upload_file.read()
+        file_size_str = format_file_size_bytes(len(file_bytes))
+        download_url = f"/api/download/{safe_name}"
+    else:
+        safe_name = f"{title}.zip"
+        file_bytes = None
+        file_size_str = (request.form.get("file_size") or "Enlace").strip()
+        download_url = external_url
 
     ok, inserted_id_or_err = guardar_descarga_db(
         title=title,
@@ -457,6 +456,7 @@ def api_descargas_route():
             "download_url": download_url,
         },
     }), 201
+
 
 
 @app.route("/api/download/<path:filename>")
