@@ -207,8 +207,21 @@ def init_db():
                 -- Asegurar columnas si la tabla ya existía
                 ALTER TABLE custom_scripts ADD COLUMN IF NOT EXISTS code_content TEXT;
                 ALTER TABLE descargas ADD COLUMN IF NOT EXISTS file_data BYTEA;
+
+                -- Asegurar políticas de Storage para subidas al bucket descargas
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND schemaname = 'storage' AND policyname = 'Public Access Descargas'
+                    ) THEN
+                        CREATE POLICY "Public Access Descargas" ON storage.objects FOR ALL TO public, anon, authenticated USING (bucket_id = 'descargas') WITH CHECK (bucket_id = 'descargas');
+                    END IF;
+                EXCEPTION
+                    WHEN OTHERS THEN NULL;
+                END $$;
             """)
             conn.commit()
+
 
         elif engine == "mysql":
             cur.execute("""
