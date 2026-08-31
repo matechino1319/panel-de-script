@@ -187,6 +187,7 @@ def init_db():
                     title VARCHAR(150) NOT NULL,
                     description TEXT,
                     script_file VARCHAR(255) NOT NULL,
+                    code_content TEXT,
                     accept VARCHAR(255) DEFAULT '.xlsx,.xls,.csv',
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
@@ -199,8 +200,13 @@ def init_db():
                     filename VARCHAR(255) NOT NULL,
                     file_size VARCHAR(50) DEFAULT '',
                     download_url VARCHAR(255) NOT NULL,
+                    file_data BYTEA,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
+
+                -- Asegurar columnas si la tabla ya existía
+                ALTER TABLE custom_scripts ADD COLUMN IF NOT EXISTS code_content TEXT;
+                ALTER TABLE descargas ADD COLUMN IF NOT EXISTS file_data BYTEA;
             """)
             conn.commit()
 
@@ -224,6 +230,7 @@ def init_db():
                     title VARCHAR(150) NOT NULL,
                     description TEXT,
                     script_file VARCHAR(255) NOT NULL,
+                    code_content LONGTEXT,
                     accept VARCHAR(255) DEFAULT '.xlsx,.xls,.csv',
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
@@ -237,6 +244,7 @@ def init_db():
                     filename VARCHAR(255) NOT NULL,
                     file_size VARCHAR(50) DEFAULT '',
                     download_url VARCHAR(255) NOT NULL,
+                    file_data LONGBLOB,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
             """)
@@ -262,6 +270,7 @@ def init_db():
                     title TEXT NOT NULL,
                     description TEXT,
                     script_file TEXT NOT NULL,
+                    code_content TEXT,
                     accept TEXT DEFAULT '.xlsx,.xls,.csv',
                     created_at TEXT DEFAULT CURRENT_TIMESTAMP
                 );
@@ -275,6 +284,7 @@ def init_db():
                     filename TEXT NOT NULL,
                     file_size TEXT DEFAULT '',
                     download_url TEXT NOT NULL,
+                    file_data BLOB,
                     created_at TEXT DEFAULT CURRENT_TIMESTAMP
                 );
             """)
@@ -286,6 +296,7 @@ def init_db():
         print(f"[DB INIT ERROR]: {exc}")
 
 
+
 def obtener_scripts_custom():
     """
     Retorna la lista de scripts creados dinámicamente.
@@ -294,7 +305,7 @@ def obtener_scripts_custom():
     try:
         conn, engine = get_db_connection()
         cur = conn.cursor()
-        cur.execute("SELECT script_id, title, description, script_file, accept FROM custom_scripts ORDER BY id ASC;")
+        cur.execute("SELECT script_id, title, description, script_file, accept, code_content FROM custom_scripts ORDER BY id ASC;")
         rows = cur.fetchall()
         for row in rows:
             if isinstance(row, dict):
@@ -304,6 +315,7 @@ def obtener_scripts_custom():
                     "script": row["script_file"],
                     "description": row["description"] or "",
                     "accept": row["accept"] or ".xlsx,.xls,.csv",
+                    "code_content": row.get("code_content"),
                     "is_custom": True
                 })
             else:
@@ -313,6 +325,7 @@ def obtener_scripts_custom():
                     "description": row[2] or "",
                     "script": row[3],
                     "accept": row[4] or ".xlsx,.xls,.csv",
+                    "code_content": row[5] if len(row) > 5 else None,
                     "is_custom": True
                 })
         cur.close()
@@ -322,19 +335,19 @@ def obtener_scripts_custom():
     return scripts
 
 
-def guardar_custom_script(script_id, title, description, script_filename, accept_exts):
+def guardar_custom_script(script_id, title, description, script_filename, accept_exts, code_content=None):
     """
-    Guarda un nuevo script en la base de datos.
+    Guarda un nuevo script y su código fuente en la base de datos.
     """
     try:
         conn, engine = get_db_connection()
         cur = conn.cursor()
         placeholder = "%s" if engine in ("postgres", "mysql") else "?"
         query = f"""
-            INSERT INTO custom_scripts (script_id, title, description, script_file, accept)
-            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder});
+            INSERT INTO custom_scripts (script_id, title, description, script_file, accept, code_content)
+            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder});
         """
-        cur.execute(query, (script_id, title, description, script_filename, accept_exts))
+        cur.execute(query, (script_id, title, description, script_filename, accept_exts, code_content))
         conn.commit()
         cur.close()
         conn.close()
@@ -346,7 +359,7 @@ def guardar_custom_script(script_id, title, description, script_filename, accept
 
 def obtener_descargas_db():
     """
-    Retorna todas las descargas registradas en la base de datos.
+    Retorna todas las descargas registradas en la base de datos (sin el binario pesado).
     """
     descargas = []
     try:
@@ -356,7 +369,10 @@ def obtener_descargas_db():
         rows = cur.fetchall()
         for row in rows:
             if isinstance(row, dict):
-                descargas.append(dict(row))
+                item = dict(row)
+                if "file_data" in item:
+                    del item["file_data"]
+                descargas.append(item)
             else:
                 descargas.append({
                     "id": row[0],
@@ -374,26 +390,75 @@ def obtener_descargas_db():
     return descargas
 
 
-def guardar_descarga_db(title, description, badge, filename, file_size, download_url):
+def obtener_archivo_descarga_db(identificador):
     """
-    Guarda una nueva herramienta descargable en la base de datos.
+    Obtiene el nombre de archivo y los bytes del archivo binario guardado en la base de datos.
     """
     try:
         conn, engine = get_db_connection()
         cur = conn.cursor()
         placeholder = "%s" if engine in ("postgres", "mysql") else "?"
+        
+        # Intentar por ID entero o por nombre de archivo
+        if str(identificador).isdigit():
+            query = f"SELECT filename, file_data FROM descargas WHERE id = {placeholder} LIMIT 1;"
+            cur.execute(query, (int(identificador),))
+        else:
+            query = f"SELECT filename, file_data FROM descargas WHERE filename = {placeholder} LIMIT 1;"
+            cur.execute(query, (str(identificador),))
+            
+        row = cur.fetchone()
+        cur.close()
+        conn.close()
+        if row:
+            if isinstance(row, dict):
+                return row["filename"], row["file_data"]
+            else:
+                return row[0], row[1]
+    except Exception as exc:
+        print(f"[DB GET FILE ERROR]: {exc}")
+    return None, None
+
+
+def guardar_descarga_db(title, description, badge, filename, file_size, download_url, file_bytes=None):
+    """
+    Guarda una nueva herramienta y sus datos binarios directamente en la base de datos.
+    """
+    try:
+        conn, engine = get_db_connection()
+        cur = conn.cursor()
+        
+        binary_data = file_bytes
+        if engine == "postgres" and file_bytes is not None:
+            import psycopg2
+            binary_data = psycopg2.Binary(file_bytes)
+            
+        placeholder = "%s" if engine in ("postgres", "mysql") else "?"
         query = f"""
-            INSERT INTO descargas (title, description, badge, filename, file_size, download_url)
-            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder});
+            INSERT INTO descargas (title, description, badge, filename, file_size, download_url, file_data)
+            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+            RETURNING id;
+        """ if engine == "postgres" else f"""
+            INSERT INTO descargas (title, description, badge, filename, file_size, download_url, file_data)
+            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder});
         """
-        cur.execute(query, (title, description, badge, filename, file_size, download_url))
+        
+        cur.execute(query, (title, description, badge, filename, file_size, download_url, binary_data))
+        inserted_id = None
+        if engine == "postgres":
+            res = cur.fetchone()
+            inserted_id = res[0] if res else None
+        else:
+            inserted_id = cur.lastrowid
+            
         conn.commit()
         cur.close()
         conn.close()
-        return True, None
+        return True, inserted_id
     except Exception as exc:
         print(f"[DB SAVE DESCARGA ERROR]: {exc}")
         return False, str(exc)
+
 
 
 

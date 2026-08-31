@@ -113,6 +113,7 @@ try:
         guardar_custom_script,
         obtener_descargas_db,
         guardar_descarga_db,
+        obtener_archivo_descarga_db,
     )
     init_db()
 except Exception as exc:
@@ -124,6 +125,8 @@ except Exception as exc:
     guardar_custom_script = lambda *args: (False, "DB no disponible")
     obtener_descargas_db = lambda: []
     guardar_descarga_db = lambda *args: (False, "DB no disponible")
+    obtener_archivo_descarga_db = lambda *args: (None, None)
+
 
 
 
@@ -348,13 +351,19 @@ def api_scripts_route():
     if not clean_name.endswith(".py"):
         clean_name += ".py"
 
+    code_content = script_file.read().decode("utf-8", errors="replace")
+    script_file.seek(0)
+
     import re
     slug = re.sub(r"[^a-zA-Z0-9_]+", "_", title.lower()).strip("_")
     script_id = f"custom_{slug}_{int(time.time())}"
     final_script_filename = f"custom_{slug}_{int(time.time())}.py"
 
-    save_path = get_upload_dir() / final_script_filename
-    script_file.save(save_path)
+    try:
+        save_path = get_upload_dir() / final_script_filename
+        script_file.save(save_path)
+    except Exception:
+        pass
 
     ok, err = guardar_custom_script(
         script_id=script_id,
@@ -362,6 +371,7 @@ def api_scripts_route():
         description=description,
         script_filename=final_script_filename,
         accept_exts=accept_exts,
+        code_content=code_content,
     )
 
     if not ok:
@@ -373,6 +383,7 @@ def api_scripts_route():
         "description": description,
         "script": final_script_filename,
         "accept": accept_exts,
+        "code_content": code_content,
         "is_custom": True,
     }
 
@@ -410,23 +421,29 @@ def api_descargas_route():
         return jsonify({"error": "No se seleccionó ningún archivo."}), 400
 
     safe_name = secure_filename(upload_file.filename)
-    save_path = get_upload_dir() / safe_name
-    upload_file.save(save_path)
-
-    file_size_str = format_file_size_bytes(save_path.stat().st_size)
+    file_bytes = upload_file.read()
+    file_size_str = format_file_size_bytes(len(file_bytes))
     download_url = f"/api/download/{safe_name}"
 
-    ok, err = guardar_descarga_db(
+    try:
+        save_path = get_upload_dir() / safe_name
+        upload_file.seek(0)
+        upload_file.save(save_path)
+    except Exception:
+        pass
+
+    ok, inserted_id_or_err = guardar_descarga_db(
         title=title,
         description=description,
         badge=badge,
         filename=safe_name,
         file_size=file_size_str,
         download_url=download_url,
+        file_bytes=file_bytes,
     )
 
     if not ok:
-        return jsonify({"error": f"Error guardando descarga en base de datos: {err}"}), 500
+        return jsonify({"error": f"Error guardando descarga en base de datos: {inserted_id_or_err}"}), 500
 
     return jsonify({
         "success": True,
@@ -445,10 +462,26 @@ def api_descargas_route():
 @app.route("/api/download/<path:filename>")
 def download_file_route(filename):
     clean_name = secure_filename(filename)
+
+    # 1. Buscar en la base de datos (PostgreSQL / Supabase)
+    if obtener_archivo_descarga_db:
+        try:
+            db_name, db_bytes = obtener_archivo_descarga_db(clean_name)
+            if db_bytes is not None:
+                return send_file(
+                    BytesIO(db_bytes),
+                    as_attachment=True,
+                    download_name=db_name or clean_name,
+                )
+        except Exception as exc:
+            print(f"[DB DOWNLOAD ERROR]: {exc}")
+
+    # 2. Buscar en uploads temporal
     target_upload = get_upload_dir() / clean_name
     if target_upload.is_file():
         return send_file(str(target_upload), as_attachment=True, download_name=clean_name)
 
+    # 3. Buscar en el directorio base
     target_base = BASE_DIR / clean_name
     if target_base.is_file():
         return send_file(str(target_base), as_attachment=True, download_name=clean_name)
@@ -516,9 +549,16 @@ def run_script(script_meta, uploaded_file, extra_files=None):
 
     started_at = time.time()
     
-    script_path = get_upload_dir() / script_meta["script"]
-    if not script_path.is_file():
-        script_path = BASE_DIR / script_meta["script"]
+    # Si el código viene de la base de datos, escribirlo directamente en run_dir
+    if script_meta.get("code_content"):
+        script_file_target = run_dir / script_meta["script"]
+        script_file_target.write_text(script_meta["code_content"], encoding="utf-8")
+        script_path = script_file_target
+    else:
+        script_path = get_upload_dir() / script_meta["script"]
+        if not script_path.is_file():
+            script_path = BASE_DIR / script_meta["script"]
+
 
 
     result = subprocess.run(
