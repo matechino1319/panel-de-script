@@ -42,11 +42,555 @@
             </div>
             <h1>Plataforma Centralizada de <span class="highlight">Herramientas</span></h1>
             <p>Acceso directo a utilidades operativas, procesamiento de datos, sistemas de verificación y descargas.</p>
+            <div style="margin-top: -12px; margin-bottom: 24px;">
+                <button type="button" class="primary-btn" id="btn-open-app-modal" style="padding: 12px 22px; font-size: 0.95rem; background: linear-gradient(135deg, var(--primary), var(--primary-hover)); display: inline-flex; align-items: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>Agregar Aplicación Web</span>
+                </button>
+            </div>
         </section>
 
-        <section class="portal-grid">
-            <!-- Herramienta 1: Panel de Scripts -->
-            <a href="/scripts.html" class="portal-card">
+        <section class="portal-grid" id="portal-grid">
+            <div class="loading-skeleton-grid" style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+                <div class="skeleton-card" style="height: 220px;"></div>
+                <div class="skeleton-card" style="height: 220px;"></div>
+                <div class="skeleton-card" style="height: 220px;"></div>
+                <div class="skeleton-card" style="height: 220px;"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal para Agregar Nueva Aplicación Web -->
+    <div id="new-app-modal" class="user-modal-backdrop" style="display: none;">
+        <div class="user-modal-card" style="max-width: 520px;">
+            <div class="user-modal-header">
+                <h3 class="user-modal-title">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    <span>Nueva Aplicación Web</span>
+                </h3>
+                <button type="button" class="user-modal-close" id="close-app-modal">&times;</button>
+            </div>
+
+            <form id="create-app-form" class="login-form">
+                <div class="form-group">
+                    <label for="app-title-input" class="form-label">Título del Sistema / Web</label>
+                    <div class="input-icon-wrap">
+                        <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
+                        <input type="text" id="app-title-input" class="login-input" placeholder="Ej: Portal de Proveedores" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="app-desc-input" class="form-label">Descripción</label>
+                    <div class="input-icon-wrap">
+                        <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="21" y1="10" x2="3" y2="10"></line>
+                            <line x1="21" y1="6" x2="3" y2="6"></line>
+                            <line x1="21" y1="14" x2="3" y2="14"></line>
+                            <line x1="21" y1="18" x2="3" y2="18"></line>
+                        </svg>
+                        <input type="text" id="app-desc-input" class="login-input" placeholder="Breve descripción del servicio o plataforma">
+                    </div>
+                </div>
+
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group">
+                        <label for="app-badge-input" class="form-label">Etiqueta / Badge</label>
+                        <div class="input-icon-wrap">
+                            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            </svg>
+                            <input type="text" id="app-badge-input" class="login-input" placeholder="Ej: Web Externa, Dashboard, etc.">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="app-icon-select" class="form-label">Ícono</label>
+                        <div class="input-icon-wrap">
+                            <select id="app-icon-select" class="login-input" style="padding-left: 12px; cursor: pointer;">
+                                <option value="globe">🌐 Web / Globo</option>
+                                <option value="shield">🛡️ Escudo / Seguridad</option>
+                                <option value="dashboard">📊 Dashboard / Gráficos</option>
+                                <option value="terminal">💻 Terminal / Script</option>
+                                <option value="database">🗄️ Base de Datos</option>
+                                <option value="link">🔗 Enlace Directo</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="app-url-input" class="form-label">Enlace URL</label>
+                    <div class="input-icon-wrap">
+                        <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                        </svg>
+                        <input type="url" id="app-url-input" class="login-input" placeholder="https://..." required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="app-footer-input" class="form-label">Texto del Botón / Pie</label>
+                    <div class="input-icon-wrap">
+                        <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                        <input type="text" id="app-footer-input" class="login-input" placeholder="Ej: Acceder a la web, Ver dashboard">
+                    </div>
+                </div>
+
+                <button type="submit" class="primary-btn login-btn" style="margin-top: 8px;">
+                    <span>Guardar Aplicación</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </button>
+            </form>
+
+            <div id="app-modal-alert" style="display: none; margin-top: 14px; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600; text-align: center;"></div>
+        </div>
+    </div>
+
+    <!-- Modal para Editar Aplicación Web -->
+    <div id="edit-app-modal" class="user-modal-backdrop" style="display: none;">
+        <div class="user-modal-card" style="max-width: 520px;">
+            <div class="user-modal-header">
+                <h3 class="user-modal-title">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    <span>Editar Aplicación Web</span>
+                </h3>
+                <button type="button" class="user-modal-close" id="close-edit-app-modal">&times;</button>
+            </div>
+
+            <form id="edit-app-form" class="login-form">
+                <input type="hidden" id="edit-app-id">
+
+                <div class="form-group">
+                    <label for="edit-app-title-input" class="form-label">Título</label>
+                    <div class="input-icon-wrap">
+                        <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
+                        <input type="text" id="edit-app-title-input" class="login-input" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-app-desc-input" class="form-label">Descripción</label>
+                    <div class="input-icon-wrap">
+                        <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="21" y1="10" x2="3" y2="10"></line>
+                            <line x1="21" y1="6" x2="3" y2="6"></line>
+                            <line x1="21" y1="14" x2="3" y2="14"></line>
+                            <line x1="21" y1="18" x2="3" y2="18"></line>
+                        </svg>
+                        <input type="text" id="edit-app-desc-input" class="login-input">
+                    </div>
+                </div>
+
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group">
+                        <label for="edit-app-badge-input" class="form-label">Etiqueta / Badge</label>
+                        <div class="input-icon-wrap">
+                            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            </svg>
+                            <input type="text" id="edit-app-badge-input" class="login-input">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-app-icon-select" class="form-label">Ícono</label>
+                        <div class="input-icon-wrap">
+                            <select id="edit-app-icon-select" class="login-input" style="padding-left: 12px; cursor: pointer;">
+                                <option value="globe">🌐 Web / Globo</option>
+                                <option value="shield">🛡️ Escudo / Seguridad</option>
+                                <option value="dashboard">📊 Dashboard / Gráficos</option>
+                                <option value="terminal">💻 Terminal / Script</option>
+                                <option value="database">🗄️ Base de Datos</option>
+                                <option value="link">🔗 Enlace Directo</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-app-url-input" class="form-label">Enlace URL</label>
+                    <div class="input-icon-wrap">
+                        <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                        </svg>
+                        <input type="url" id="edit-app-url-input" class="login-input" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-app-footer-input" class="form-label">Texto del Botón / Pie</label>
+                    <div class="input-icon-wrap">
+                        <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                        <input type="text" id="edit-app-footer-input" class="login-input">
+                    </div>
+                </div>
+
+                <button type="submit" class="primary-btn login-btn" style="margin-top: 8px;">
+                    <span>Actualizar Cambios</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </button>
+            </form>
+
+            <div id="edit-app-modal-alert" style="display: none; margin-top: 14px; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600; text-align: center;"></div>
+        </div>
+    </div>
+
+    <!-- Contenedor para Toast -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <span>© LA YUNTA — Departamento de Informática</span>
+            <a href="/scripts.html" class="footer-link">Panel de Scripts &rarr;</a>
+        </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script>
+        const grid = document.getElementById("portal-grid");
+        const btnOpen = document.getElementById("btn-open-app-modal");
+        const modal = document.getElementById("new-app-modal");
+        const closeBtn = document.getElementById("close-app-modal");
+        const form = document.getElementById("create-app-form");
+        const alertBox = document.getElementById("app-modal-alert");
+        const toastContainer = document.getElementById("toast-container");
+
+        // Edit modal
+        const editModal = document.getElementById("edit-app-modal");
+        const editCloseBtn = document.getElementById("close-edit-app-modal");
+        const editForm = document.getElementById("edit-app-form");
+        const editAlertBox = document.getElementById("edit-app-modal-alert");
+
+        let loadedApps = [];
+
+        const ICON_MAP = {
+            shield: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>`,
+            dashboard: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>`,
+            globe: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`,
+            terminal: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>`,
+            database: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>`,
+            link: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`
+        };
+
+        function showToast(type, title, message) {
+            if (!toastContainer) return;
+            const toast = document.createElement("div");
+            toast.className = `toast toast-${type}`;
+            const icon = type === "success" 
+                ? `<svg class="toast-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`
+                : `<svg class="toast-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+            toast.innerHTML = `${icon}<div class="toast-content"><div class="toast-title">${title}</div><div class="toast-msg">${message}</div></div>`;
+            toastContainer.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = "0";
+                toast.style.transform = "translateX(100%)";
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function showAlert(box, message, isError = true) {
+            box.style.display = "block";
+            box.style.background = isError ? "#fee2e2" : "#dcfce7";
+            box.style.color = isError ? "#991b1b" : "#166534";
+            box.style.border = `1px solid ${isError ? "#f87171" : "#86efac"}`;
+            box.textContent = message;
+        }
+
+        function hideAlert(box) {
+            box.style.display = "none";
+            box.textContent = "";
+        }
+
+        // Modal Open / Close
+        if (btnOpen) {
+            btnOpen.addEventListener("click", () => {
+                hideAlert(alertBox);
+                form.reset();
+                document.getElementById("app-badge-input").value = "Web Externa";
+                document.getElementById("app-footer-input").value = "Acceder a la web";
+                modal.style.display = "flex";
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener("click", () => { modal.style.display = "none"; });
+        }
+        if (modal) {
+            modal.addEventListener("click", (e) => {
+                if (e.target === modal) modal.style.display = "none";
+            });
+        }
+
+        if (editCloseBtn) {
+            editCloseBtn.addEventListener("click", () => { editModal.style.display = "none"; });
+        }
+        if (editModal) {
+            editModal.addEventListener("click", (e) => {
+                if (e.target === editModal) editModal.style.display = "none";
+            });
+        }
+
+        // Close dropdowns on outside click
+        document.addEventListener("click", (e) => {
+            if (!e.target.closest(".card-actions-menu")) {
+                document.querySelectorAll(".card-dropdown.show").forEach(d => d.classList.remove("show"));
+            }
+        });
+
+        function openEditAppModal(app) {
+            hideAlert(editAlertBox);
+            document.getElementById("edit-app-id").value = app.id;
+            document.getElementById("edit-app-title-input").value = app.title || "";
+            document.getElementById("edit-app-desc-input").value = app.description || "";
+            document.getElementById("edit-app-badge-input").value = app.badge || "Web Externa";
+            document.getElementById("edit-app-url-input").value = app.url || "";
+            document.getElementById("edit-app-icon-select").value = app.icon || "globe";
+            document.getElementById("edit-app-footer-input").value = app.footer_text || "Acceder a la web";
+            editModal.style.display = "flex";
+        }
+
+        async function deleteApp(appId, appTitle) {
+            if (!confirm(`¿Estás seguro de que deseas eliminar la aplicación "${appTitle}"?`)) return;
+
+            try {
+                const res = await fetch(`/api/apps/${appId}`, { method: "DELETE" });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "No se pudo eliminar la aplicación.");
+
+                showToast("success", "Aplicación Eliminada", `"${appTitle}" fue eliminada correctamente.`);
+                loadPortalApps();
+            } catch (err) {
+                showToast("error", "Error al Eliminar", err.message);
+            }
+        }
+
+        // Create form submit
+        if (form) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                hideAlert(alertBox);
+
+                const title = document.getElementById("app-title-input").value.trim();
+                const description = document.getElementById("app-desc-input").value.trim();
+                const badge = document.getElementById("app-badge-input").value.trim() || "Web Externa";
+                const icon = document.getElementById("app-icon-select").value || "globe";
+                const url = document.getElementById("app-url-input").value.trim();
+                const footer_text = document.getElementById("app-footer-input").value.trim() || "Acceder a la web";
+
+                const submitBtn = form.querySelector("button[type='submit']");
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<span>Guardando...</span>`;
+
+                try {
+                    const res = await fetch("/api/apps", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ title, description, badge, icon, url, footer_text })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || "Error al registrar la aplicación.");
+
+                    modal.style.display = "none";
+                    showToast("success", "Aplicación Guardada", `"${title}" está disponible en el panel.`);
+                    loadPortalApps();
+                } catch (err) {
+                    showAlert(alertBox, err.message, true);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `<span>Guardar Aplicación</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                }
+            });
+        }
+
+        // Edit form submit
+        if (editForm) {
+            editForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                hideAlert(editAlertBox);
+
+                const appId = document.getElementById("edit-app-id").value;
+                const title = document.getElementById("edit-app-title-input").value.trim();
+                const description = document.getElementById("edit-app-desc-input").value.trim();
+                const badge = document.getElementById("edit-app-badge-input").value.trim() || "Web Externa";
+                const icon = document.getElementById("edit-app-icon-select").value || "globe";
+                const url = document.getElementById("edit-app-url-input").value.trim();
+                const footer_text = document.getElementById("edit-app-footer-input").value.trim() || "Acceder a la web";
+
+                const submitBtn = editForm.querySelector("button[type='submit']");
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<span>Guardando...</span>`;
+
+                try {
+                    const res = await fetch(`/api/apps/${appId}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ title, description, badge, icon, url, footer_text })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || "Error al actualizar la aplicación.");
+
+                    editModal.style.display = "none";
+                    showToast("success", "Cambios Guardados", `"${title}" ha sido actualizada.`);
+                    loadPortalApps();
+                } catch (err) {
+                    showAlert(editAlertBox, err.message, true);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `<span>Actualizar Cambios</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                }
+            });
+        }
+
+        function createPortalCardElement(app) {
+            const card = document.createElement("div");
+            card.className = "portal-card";
+            card.style.cursor = "pointer";
+
+            const iconHtml = ICON_MAP[app.icon] || ICON_MAP.globe;
+            const isExternal = app.url.startsWith("http");
+
+            card.innerHTML = `
+                <div class="portal-card-top">
+                    <div class="portal-card-icon">
+                        ${iconHtml}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="portal-card-badge">${app.badge || "Web Externa"}</span>
+                        <div class="card-actions-menu">
+                            <button type="button" class="card-menu-trigger" title="Opciones" aria-label="Opciones">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="1.5"></circle>
+                                    <circle cx="12" cy="5" r="1.5"></circle>
+                                    <circle cx="12" cy="19" r="1.5"></circle>
+                                </svg>
+                            </button>
+                            <div class="card-dropdown">
+                                <button type="button" class="card-dropdown-item btn-edit-app">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                    <span>Editar</span>
+                                </button>
+                                <button type="button" class="card-dropdown-item danger btn-delete-app">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                    <span>Eliminar</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="portal-card-body">
+                    <h2 class="portal-card-title">${app.title}</h2>
+                    <p class="portal-card-desc">${app.description || ""}</p>
+                </div>
+                <div class="portal-card-footer">
+                    <span>${app.footer_text || (isExternal ? "Acceder a la web" : "Abrir")}</span>
+                    <svg class="portal-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        ${isExternal 
+                            ? `<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line>`
+                            : `<path d="M5 12h14M12 5l7 7-7 7"/>`
+                        }
+                    </svg>
+                </div>
+            `;
+
+            // Card click (open link)
+            card.addEventListener("click", (e) => {
+                if (e.target.closest(".card-actions-menu")) return;
+                if (isExternal) {
+                    window.open(app.url, app.target || "_blank", "noopener,noreferrer");
+                } else {
+                    window.location.href = app.url;
+                }
+            });
+
+            // 3-dots Menu interactions
+            const menuTrigger = card.querySelector(".card-menu-trigger");
+            const dropdown = card.querySelector(".card-dropdown");
+            const btnEdit = card.querySelector(".btn-edit-app");
+            const btnDelete = card.querySelector(".btn-delete-app");
+
+            if (menuTrigger && dropdown) {
+                menuTrigger.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const wasOpen = dropdown.classList.contains("show");
+                    document.querySelectorAll(".card-dropdown.show").forEach(d => d.classList.remove("show"));
+                    if (!wasOpen) dropdown.classList.add("show");
+                });
+            }
+
+            if (btnEdit) {
+                btnEdit.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    dropdown.classList.remove("show");
+                    openEditAppModal(app);
+                });
+            }
+
+            if (btnDelete) {
+                btnDelete.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    dropdown.classList.remove("show");
+                    deleteApp(app.id, app.title);
+                });
+            }
+
+            return card;
+        }
+
+        async function loadPortalApps() {
+            try {
+                const res = await fetch("/api/apps");
+                const data = await res.json();
+                loadedApps = data.apps || [];
+            } catch (err) {
+                console.warn("No se pudo cargar /api/apps, usando valores iniciales:", err);
+                loadedApps = [
+                    { id: 1, title: "Verificador Promo", description: "Sistema interactivo en línea para la comprobación y auditoría de condiciones de promociones vigentes.", badge: "Web Externa", url: "https://botly.servepics.com/", icon: "shield", footer_text: "Acceder a la web" },
+                    { id: 2, title: "Retail Monitor", description: "Panel de control y visualización en tiempo real para supervisión de montos y operaciones comerciales.", badge: "Dashboard", url: "http://138.97.177.80:8000/dashboard", icon: "dashboard", footer_text: "Ver dashboard" }
+                ];
+            }
+
+            grid.innerHTML = "";
+
+            // 1. Herramienta Fija: Panel de Scripts
+            const scriptsCard = document.createElement("a");
+            scriptsCard.href = "/scripts.html";
+            scriptsCard.className = "portal-card";
+            scriptsCard.innerHTML = `
                 <div class="portal-card-top">
                     <div class="portal-card-icon">
                         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -64,53 +608,19 @@
                     <span>Abrir panel</span>
                     <svg class="portal-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </div>
-            </a>
+            `;
+            grid.appendChild(scriptsCard);
 
-            <!-- Herramienta 2: Verificador Promo -->
-            <a href="https://botly.servepics.com/" target="_blank" rel="noopener noreferrer" class="portal-card">
-                <div class="portal-card-top">
-                    <div class="portal-card-icon">
-                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                            <polyline points="9 12 11 14 15 10"></polyline>
-                        </svg>
-                    </div>
-                    <span class="portal-card-badge">Web Externa</span>
-                </div>
-                <div class="portal-card-body">
-                    <h2 class="portal-card-title">Verificador Promo</h2>
-                    <p class="portal-card-desc">Sistema interactivo en línea para la comprobación y auditoría de condiciones de promociones vigentes.</p>
-                </div>
-                <div class="portal-card-footer">
-                    <span>Acceder a la web</span>
-                    <svg class="portal-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                </div>
-            </a>
+            // 2. Apps Dinámicas
+            loadedApps.forEach(app => {
+                grid.appendChild(createPortalCardElement(app));
+            });
 
-            <!-- Herramienta 3: Retail Monitor -->
-            <a href="http://138.97.177.80:8000/dashboard" target="_blank" rel="noopener noreferrer" class="portal-card">
-                <div class="portal-card-top">
-                    <div class="portal-card-icon">
-                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="18" y1="20" x2="18" y2="10"></line>
-                            <line x1="12" y1="20" x2="12" y2="4"></line>
-                            <line x1="6" y1="20" x2="6" y2="14"></line>
-                        </svg>
-                    </div>
-                    <span class="portal-card-badge">Dashboard</span>
-                </div>
-                <div class="portal-card-body">
-                    <h2 class="portal-card-title">Retail Monitor</h2>
-                    <p class="portal-card-desc">Panel de control y visualización en tiempo real para supervisión de montos y operaciones comerciales.</p>
-                </div>
-                <div class="portal-card-footer">
-                    <span>Ver dashboard</span>
-                    <svg class="portal-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                </div>
-            </a>
-
-            <!-- Herramienta 4: Descargas -->
-            <a href="/descargas.html" class="portal-card">
+            // 3. Herramienta Fija: Descargas
+            const descargasCard = document.createElement("a");
+            descargasCard.href = "/descargas.html";
+            descargasCard.className = "portal-card";
+            descargasCard.innerHTML = `
                 <div class="portal-card-top">
                     <div class="portal-card-icon">
                         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -129,17 +639,13 @@
                     <span>Ver descargas</span>
                     <svg class="portal-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </div>
-            </a>
-        </section>
-    </main>
+            `;
+            grid.appendChild(descargasCard);
+        }
 
-    <footer class="site-footer">
-        <div class="footer-content">
-            <span>© LA YUNTA — Departamento de Informática</span>
-            <a href="/scripts.html" class="footer-link">Panel de Scripts &rarr;</a>
-        </div>
-    </footer>
-
-    <script src="auth.js"></script>
+        // Carga inicial
+        loadPortalApps();
+    </script>
 </body>
 </html>
+

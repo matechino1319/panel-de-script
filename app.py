@@ -118,6 +118,10 @@ try:
         actualizar_descarga_db,
         eliminar_descarga_db,
         obtener_archivo_descarga_db,
+        obtener_apps_db,
+        guardar_app_db,
+        actualizar_app_db,
+        eliminar_app_db,
     )
     init_db()
 except Exception as exc:
@@ -134,6 +138,10 @@ except Exception as exc:
     actualizar_descarga_db = lambda *args: (False, "DB no disponible")
     eliminar_descarga_db = lambda *args: (False, "DB no disponible")
     obtener_archivo_descarga_db = lambda *args: (None, None)
+    obtener_apps_db = lambda: []
+    guardar_app_db = lambda *args: (False, "DB no disponible")
+    actualizar_app_db = lambda *args: (False, "DB no disponible")
+    eliminar_app_db = lambda *args: (False, "DB no disponible")
 
 
 
@@ -157,6 +165,29 @@ DEFAULT_DESCARGAS = [
         "filename": "analizador_particiones.zip",
         "file_size": "11.1 MB",
         "download_url": "/api/download/analizador_particiones.zip",
+    }
+]
+
+DEFAULT_APPS = [
+    {
+        "id": 1,
+        "title": "Verificador Promo",
+        "description": "Sistema interactivo en línea para la comprobación y auditoría de condiciones de promociones vigentes.",
+        "badge": "Web Externa",
+        "url": "https://botly.servepics.com/",
+        "icon": "shield",
+        "target": "_blank",
+        "footer_text": "Acceder a la web"
+    },
+    {
+        "id": 2,
+        "title": "Retail Monitor",
+        "description": "Panel de control y visualización en tiempo real para supervisión de montos y operaciones comerciales.",
+        "badge": "Dashboard",
+        "url": "http://138.97.177.80:8000/dashboard",
+        "icon": "dashboard",
+        "target": "_blank",
+        "footer_text": "Ver dashboard"
     }
 ]
 
@@ -547,6 +578,95 @@ def api_descarga_detail_route(descarga_id):
     return jsonify({"success": True, "message": "Descarga actualizada con éxito."})
 
 
+@app.route("/api/apps", methods=["GET", "POST"])
+def api_apps_route():
+    if request.method == "POST":
+        data = request.get_json(silent=True) or request.form
+        title = (data.get("title") or "").strip()
+        description = (data.get("description") or "").strip()
+        badge = (data.get("badge") or "Web Externa").strip()
+        url = (data.get("url") or "").strip()
+        icon = (data.get("icon") or "globe").strip()
+        target = (data.get("target") or "_blank").strip()
+        footer_text = (data.get("footer_text") or "Acceder a la web").strip()
+
+        if not title or not url:
+            return jsonify({"error": "El título y la URL son obligatorios."}), 400
+
+        ok, inserted_id = guardar_app_db(title, description, badge, url, icon, target, footer_text)
+        if not ok:
+            # Fallback en memoria si la BD no está disponible
+            new_id = int(time.time())
+            DEFAULT_APPS.append({
+                "id": new_id,
+                "title": title,
+                "description": description,
+                "badge": badge,
+                "url": url,
+                "icon": icon,
+                "target": target,
+                "footer_text": footer_text
+            })
+            return jsonify({"success": True, "id": new_id, "message": "Aplicación registrada (local)."})
+
+        return jsonify({"success": True, "id": inserted_id, "message": "Aplicación registrada con éxito."})
+
+    # GET
+    db_apps = []
+    if obtener_apps_db:
+        try:
+            db_apps = obtener_apps_db()
+        except Exception:
+            db_apps = []
+
+    if not db_apps:
+        return jsonify({"apps": DEFAULT_APPS})
+
+    return jsonify({"apps": db_apps})
+
+
+@app.route("/api/apps/<int:app_id>", methods=["PUT", "DELETE"])
+def api_app_detail_route(app_id):
+    if request.method == "DELETE":
+        for item in list(DEFAULT_APPS):
+            if item.get("id") == app_id:
+                DEFAULT_APPS.remove(item)
+                return jsonify({"success": True, "message": "Aplicación eliminada con éxito."})
+
+        ok, err = eliminar_app_db(app_id)
+        if not ok:
+            return jsonify({"error": f"Error al eliminar aplicación: {err}"}), 500
+        return jsonify({"success": True, "message": "Aplicación eliminada con éxito."})
+
+    # PUT
+    data = request.get_json(silent=True) or request.form
+    title = (data.get("title") or "").strip()
+    description = (data.get("description") or "").strip()
+    badge = (data.get("badge") or "Web Externa").strip()
+    url = (data.get("url") or "").strip()
+    icon = (data.get("icon") or "globe").strip()
+    target = (data.get("target") or "_blank").strip()
+    footer_text = (data.get("footer_text") or "Acceder a la web").strip()
+
+    if not title or not url:
+        return jsonify({"error": "El título y la URL son obligatorios."}), 400
+
+    for item in DEFAULT_APPS:
+        if item.get("id") == app_id:
+            item["title"] = title
+            item["description"] = description
+            item["badge"] = badge
+            item["url"] = url
+            item["icon"] = icon
+            item["target"] = target
+            item["footer_text"] = footer_text
+            return jsonify({"success": True, "message": "Aplicación actualizada con éxito."})
+
+    ok, err = actualizar_app_db(app_id, title, description, badge, url, icon, target, footer_text)
+    if not ok:
+        return jsonify({"error": f"Error al actualizar aplicación: {err}"}), 500
+
+    return jsonify({"success": True, "message": "Aplicación actualizada con éxito."})
 
 
 @app.route("/api/download/<path:filename>")

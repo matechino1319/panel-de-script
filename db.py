@@ -204,6 +204,18 @@ def init_db():
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
 
+                CREATE TABLE IF NOT EXISTS portal_apps (
+                    id SERIAL PRIMARY KEY,
+                    title VARCHAR(150) NOT NULL,
+                    description TEXT,
+                    badge VARCHAR(50) DEFAULT 'Web Externa',
+                    url VARCHAR(255) NOT NULL,
+                    icon VARCHAR(50) DEFAULT 'globe',
+                    target VARCHAR(20) DEFAULT '_blank',
+                    footer_text VARCHAR(50) DEFAULT 'Acceder a la web',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+
                 -- Asegurar columnas si la tabla ya existía
                 ALTER TABLE custom_scripts ADD COLUMN IF NOT EXISTS code_content TEXT;
                 ALTER TABLE descargas ADD COLUMN IF NOT EXISTS file_data BYTEA;
@@ -261,6 +273,19 @@ def init_db():
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
             """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS portal_apps (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    title VARCHAR(150) NOT NULL,
+                    description TEXT,
+                    badge VARCHAR(50) DEFAULT 'Web Externa',
+                    url VARCHAR(255) NOT NULL,
+                    icon VARCHAR(50) DEFAULT 'globe',
+                    target VARCHAR(20) DEFAULT '_blank',
+                    footer_text VARCHAR(50) DEFAULT 'Acceder a la web',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
             conn.commit()
 
         else:  # sqlite
@@ -301,7 +326,46 @@ def init_db():
                     created_at TEXT DEFAULT CURRENT_TIMESTAMP
                 );
             """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS portal_apps (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    title TEXT NOT NULL,
+                    description TEXT,
+                    badge TEXT DEFAULT 'Web Externa',
+                    url TEXT NOT NULL,
+                    icon TEXT DEFAULT 'globe',
+                    target TEXT DEFAULT '_blank',
+                    footer_text TEXT DEFAULT 'Acceder a la web',
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
             conn.commit()
+
+        # Seed initial apps if table is empty
+        try:
+            cur.execute("SELECT COUNT(*) FROM portal_apps;")
+            count_res = cur.fetchone()
+            count = 0
+            if count_res:
+                if isinstance(count_res, dict):
+                    count = list(count_res.values())[0]
+                else:
+                    count = count_res[0]
+            if count == 0:
+                ph = "%s" if engine in ("postgres", "mysql") else "?"
+                seed_query = f"""
+                    INSERT INTO portal_apps (title, description, badge, url, icon, target, footer_text)
+                    VALUES 
+                    ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}),
+                    ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph});
+                """
+                cur.execute(seed_query, (
+                    "Verificador Promo", "Sistema interactivo en línea para la comprobación y auditoría de condiciones de promociones vigentes.", "Web Externa", "https://botly.servepics.com/", "shield", "_blank", "Acceder a la web",
+                    "Retail Monitor", "Panel de control y visualización en tiempo real para supervisión de montos y operaciones comerciales.", "Dashboard", "http://138.97.177.80:8000/dashboard", "dashboard", "_blank", "Ver dashboard"
+                ))
+                conn.commit()
+        except Exception as seed_err:
+            print(f"[DB SEED APPS ERROR]: {seed_err}")
 
         cur.close()
         conn.close()
@@ -554,6 +618,112 @@ def eliminar_descarga_db(descarga_id):
         return True, None
     except Exception as exc:
         print(f"[DB DELETE DESCARGA ERROR]: {exc}")
+        return False, str(exc)
+
+
+def obtener_apps_db():
+    """
+    Retorna todas las aplicaciones web registradas en la base de datos.
+    """
+    apps = []
+    try:
+        conn, engine = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT id, title, description, badge, url, icon, target, footer_text FROM portal_apps ORDER BY id ASC;")
+        rows = cur.fetchall()
+        for row in rows:
+            if isinstance(row, dict):
+                apps.append(dict(row))
+            else:
+                apps.append({
+                    "id": row[0],
+                    "title": row[1],
+                    "description": row[2] or "",
+                    "badge": row[3] or "Web Externa",
+                    "url": row[4],
+                    "icon": row[5] or "globe",
+                    "target": row[6] or "_blank",
+                    "footer_text": row[7] or "Acceder a la web"
+                })
+        cur.close()
+        conn.close()
+    except Exception as exc:
+        print(f"[DB GET APPS ERROR]: {exc}")
+    return apps
+
+
+def guardar_app_db(title, description, badge, url, icon="globe", target="_blank", footer_text="Acceder a la web"):
+    """
+    Guarda una nueva aplicación web en la base de datos.
+    """
+    try:
+        conn, engine = get_db_connection()
+        cur = conn.cursor()
+        placeholder = "%s" if engine in ("postgres", "mysql") else "?"
+        query = f"""
+            INSERT INTO portal_apps (title, description, badge, url, icon, target, footer_text)
+            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+            RETURNING id;
+        """ if engine == "postgres" else f"""
+            INSERT INTO portal_apps (title, description, badge, url, icon, target, footer_text)
+            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder});
+        """
+        cur.execute(query, (title, description, badge, url, icon, target, footer_text))
+        inserted_id = None
+        if engine == "postgres":
+            res = cur.fetchone()
+            inserted_id = res[0] if res else None
+        else:
+            inserted_id = cur.lastrowid
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True, inserted_id
+    except Exception as exc:
+        print(f"[DB SAVE APP ERROR]: {exc}")
+        return False, str(exc)
+
+
+def actualizar_app_db(app_id, title, description, badge, url, icon="globe", target="_blank", footer_text="Acceder a la web"):
+    """
+    Actualiza la información de una aplicación web.
+    """
+    try:
+        conn, engine = get_db_connection()
+        cur = conn.cursor()
+        placeholder = "%s" if engine in ("postgres", "mysql") else "?"
+        query = f"""
+            UPDATE portal_apps
+            SET title = {placeholder}, description = {placeholder}, badge = {placeholder},
+                url = {placeholder}, icon = {placeholder}, target = {placeholder}, footer_text = {placeholder}
+            WHERE id = {placeholder};
+        """
+        cur.execute(query, (title, description, badge, url, icon, target, footer_text, int(app_id)))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True, None
+    except Exception as exc:
+        print(f"[DB UPDATE APP ERROR]: {exc}")
+        return False, str(exc)
+
+
+def eliminar_app_db(app_id):
+    """
+    Elimina una aplicación web de la base de datos.
+    """
+    try:
+        conn, engine = get_db_connection()
+        cur = conn.cursor()
+        placeholder = "%s" if engine in ("postgres", "mysql") else "?"
+        query = f"DELETE FROM portal_apps WHERE id = {placeholder};"
+        cur.execute(query, (int(app_id),))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True, None
+    except Exception as exc:
+        print(f"[DB DELETE APP ERROR]: {exc}")
         return False, str(exc)
 
 
