@@ -723,7 +723,6 @@ body {
     gap: 20px;
     transition: var(--transition-normal);
     position: relative;
-    overflow: hidden;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 

@@ -140,7 +140,6 @@ function buildCard(scriptMeta) {
                 <div class="card-icon">${iconSvg}</div>
                 <span class="format-badge">${formatLabel}</span>
             </div>
-            ${scriptMeta.is_custom ? `
             <div class="card-actions-menu">
                 <button type="button" class="card-menu-trigger" title="Opciones">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -160,43 +159,40 @@ function buildCard(scriptMeta) {
                     </button>
                 </div>
             </div>
-            ` : ''}
         </div>
         <h3 class="script-title">${scriptMeta.title}</h3>
         <p class="script-description">${scriptMeta.description}</p>
     `;
 
-    if (scriptMeta.is_custom) {
-        const menuTrigger = cardTop.querySelector(".card-menu-trigger");
-        const dropdown = cardTop.querySelector(".card-dropdown");
-        const btnEdit = cardTop.querySelector(".btn-edit-script");
-        const btnDelete = cardTop.querySelector(".btn-delete-script");
+    const menuTrigger = cardTop.querySelector(".card-menu-trigger");
+    const dropdown = cardTop.querySelector(".card-dropdown");
+    const btnEdit = cardTop.querySelector(".btn-edit-script");
+    const btnDelete = cardTop.querySelector(".btn-delete-script");
 
-        if (menuTrigger && dropdown) {
-            menuTrigger.addEventListener("click", (e) => {
-                e.stopPropagation();
-                document.querySelectorAll(".card-dropdown.show").forEach(d => {
-                    if (d !== dropdown) d.classList.remove("show");
-                });
-                dropdown.classList.toggle("show");
+    if (menuTrigger && dropdown) {
+        menuTrigger.addEventListener("click", (e) => {
+            e.stopPropagation();
+            document.querySelectorAll(".card-dropdown.show").forEach(d => {
+                if (d !== dropdown) d.classList.remove("show");
             });
-        }
+            dropdown.classList.toggle("show");
+        });
+    }
 
-        if (btnEdit) {
-            btnEdit.addEventListener("click", (e) => {
-                e.stopPropagation();
-                dropdown.classList.remove("show");
-                openEditScriptModal(scriptMeta);
-            });
-        }
+    if (btnEdit) {
+        btnEdit.addEventListener("click", (e) => {
+            e.stopPropagation();
+            dropdown.classList.remove("show");
+            openEditScriptModal(scriptMeta);
+        });
+    }
 
-        if (btnDelete) {
-            btnDelete.addEventListener("click", (e) => {
-                e.stopPropagation();
-                dropdown.classList.remove("show");
-                deleteScript(scriptMeta.id, scriptMeta.title);
-            });
-        }
+    if (btnDelete) {
+        btnDelete.addEventListener("click", (e) => {
+            e.stopPropagation();
+            dropdown.classList.remove("show");
+            deleteScript(scriptMeta.id, scriptMeta.title);
+        });
     }
 
 

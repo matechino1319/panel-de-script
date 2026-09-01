@@ -472,6 +472,13 @@ def api_descargas_route():
 @app.route("/api/scripts/<script_id>", methods=["PUT", "DELETE"])
 def api_script_detail_route(script_id):
     if request.method == "DELETE":
+        for s in list(SCRIPT_CATALOG):
+            if s["id"] == script_id:
+                SCRIPT_CATALOG.remove(s)
+                if script_id in SCRIPT_INDEX:
+                    del SCRIPT_INDEX[script_id]
+                return jsonify({"success": True, "message": "Script eliminado con éxito."})
+
         ok, err = eliminar_custom_script(script_id)
         if not ok:
             return jsonify({"error": f"Error al eliminar script: {err}"}), 500
@@ -486,6 +493,13 @@ def api_script_detail_route(script_id):
     if not title:
         return jsonify({"error": "El título es obligatorio."}), 400
 
+    for s in SCRIPT_CATALOG:
+        if s["id"] == script_id:
+            s["title"] = title
+            s["description"] = description
+            s["accept"] = accept_exts
+            return jsonify({"success": True, "message": "Script actualizado con éxito."})
+
     ok, err = actualizar_custom_script(script_id, title, description, accept_exts)
     if not ok:
         return jsonify({"error": f"Error al actualizar script: {err}"}), 500
@@ -496,6 +510,11 @@ def api_script_detail_route(script_id):
 @app.route("/api/descargas/<int:descarga_id>", methods=["PUT", "DELETE"])
 def api_descarga_detail_route(descarga_id):
     if request.method == "DELETE":
+        for item in list(DEFAULT_DESCARGAS):
+            if item.get("id") == descarga_id:
+                DEFAULT_DESCARGAS.remove(item)
+                return jsonify({"success": True, "message": "Descarga eliminada con éxito."})
+
         ok, err = eliminar_descarga_db(descarga_id)
         if not ok:
             return jsonify({"error": f"Error al eliminar descarga: {err}"}), 500
@@ -511,6 +530,15 @@ def api_descarga_detail_route(descarga_id):
 
     if not title or not download_url:
         return jsonify({"error": "El título y el enlace son obligatorios."}), 400
+
+    for item in DEFAULT_DESCARGAS:
+        if item.get("id") == descarga_id:
+            item["title"] = title
+            item["description"] = description
+            item["badge"] = badge
+            item["download_url"] = download_url
+            item["file_size"] = file_size
+            return jsonify({"success": True, "message": "Descarga actualizada con éxito."})
 
     ok, err = actualizar_descarga_db(descarga_id, title, description, badge, download_url, file_size)
     if not ok:
