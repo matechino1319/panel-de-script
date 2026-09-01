@@ -11,3 +11,4 @@ __pycache__/
 outputs/
 *.sqlite
 *.sqlite3
+Vecinos/
