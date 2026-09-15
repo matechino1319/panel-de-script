@@ -1,12 +1,13 @@
 # Contexto del proyecto
 
 ## Última actualización
-2026-09-01 14:41
+2026-09-15 09:18
 
 ## Estado actual
-Portal web integral del Departamento de Informática de LA YUNTA con panel de scripts automáticos, repositorio dinámico de herramientas descargables, catálogo dinámico de aplicaciones web y administración de usuarios. Cuenta con autenticación centralizada contra Supabase/PostgreSQL, almacenamiento de código y descargas en la nube, y gestión completa mediante menús de tres puntos (`⋮`) para editar y eliminar scripts, descargas y aplicaciones web.
+Portal web integral del Departamento de Informática de LA YUNTA con panel de scripts automáticos, soporte interactivo para opciones/parámetros en scripts, repositorio dinámico de herramientas descargables, catálogo dinámico de aplicaciones web y administración de usuarios. Cuenta con autenticación centralizada contra Supabase/PostgreSQL, almacenamiento de código y descargas en la nube, y gestión completa mediante menús de tres puntos (`⋮`).
 
 ## Decisiones técnicas
+- **Soporte Dinámico de Opciones en Scripts (`app.py` / `script.js` / `style.css`)**: Definición de metadatos `options` en catálogo para renderizar desplegables/entradas en tiempo real e inyectar las selecciones del usuario por entorno (`SCRIPT_OPTION_*`) y entrada estándar (`stdin`).
 - **Gestión Dinámica de Aplicaciones Web (`index.html` / `app.py` / `db.py`)**: Tabla `portal_apps` en base de datos para registrar enlaces a plataformas internas/externas con icono seleccionable, badge personalizado y acciones CRUD mediante menú de tres puntos (`⋮`).
 - **Almacenamiento Directo en Supabase Storage & PostgreSQL**: Subida de archivos desde el navegador directamente al bucket `descargas` de Supabase Storage mediante la API anónima, evitando el límite de 4.5 MB de Vercel Serverless.
 - **Soporte Dual en Descargas (`descargas.html`)**: Pestaña para subida directa de archivos locales (<50 MB) y pestaña para enlaces externos (Google Drive / OneDrive / Mega) para paquetes pesados.
@@ -15,15 +16,28 @@ Portal web integral del Departamento de Informática de LA YUNTA con panel de sc
 - **Gestión de Seguridad Restringida (`auth.js` / `login.html`)**: La creación y cambio de contraseñas de usuarios administradores se encuentra disponible únicamente dentro de la sesión autenticada.
 
 ## Problemas conocidos
-- Ninguno activo. Límite de Supabase Storage en plan gratuito fijado en 50 MB por archivo (mitigado con la pestaña de enlaces externos).
+- Ninguno activo.
 
 ## Próximos pasos
 - Continuar agregando scripts operativos al catálogo según requerimientos del equipo.
-- Monitorear el uso del almacenamiento en Supabase Storage.
 
 ---
 
 ## Historial de sesiones
+
+### Sesión 2026-09-15
+
+**Completado:**
+- Integración de script unificado `informe_promociones.py` para Vecinos, Empleados y Jubilados con comparativa de sucursales vs franquicias.
+- Soporte en backend (`app.py`) y frontend (`script.js`) para scripts con opciones configurables (`options` / `<select>`).
+- Inyección de opciones a subprocesos mediante variables de entorno y `stdin`.
+- Estilos de interfaz para selectores en tarjetas de scripts en `style.css`.
+
+**Modificado:**
+- `informe_promociones.py` (NUEVO / ACTUALIZADO) — Script de promociones multivariable.
+- `app.py` — Catálogo con opciones y paso de argumentos a `run_script`.
+- `script.js` — Renderizado de controles de opción y adjunto a `FormData`.
+- `style.css` — Estilos para `.script-options-container` y selectores.
 
 ### Sesión 2026-09-01
 

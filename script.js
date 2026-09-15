@@ -19,6 +19,7 @@ const SCRIPT_ICONS = {
     cajero_mas_vendio: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>`,
     pesables: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
     quitar_fondo: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
+    informe_promociones: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`,
     promociones_vecinos: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
     promociones_jubilados: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
     promociones: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`,
@@ -199,6 +200,58 @@ function buildCard(scriptMeta) {
     const cardBottom = document.createElement("div");
     cardBottom.className = "card-bottom";
 
+    // Opciones del Script (Dropdowns / Selects / Inputs)
+    const optionElements = [];
+    const scriptOptions = scriptMeta.options || [];
+    if (scriptOptions.length > 0) {
+        const optionsContainer = document.createElement("div");
+        optionsContainer.className = "script-options-container";
+
+        for (const opt of scriptOptions) {
+            const optGroup = document.createElement("div");
+            optGroup.className = "script-option-group";
+
+            const optLabel = document.createElement("label");
+            optLabel.className = "script-option-label";
+            optLabel.textContent = opt.label || opt.key;
+            optGroup.appendChild(optLabel);
+
+            if (opt.type === "select" || opt.choices) {
+                const selectWrap = document.createElement("div");
+                selectWrap.className = "script-select-wrap";
+
+                const select = document.createElement("select");
+                select.className = "script-option-select";
+                select.name = opt.key;
+
+                for (const choice of (opt.choices || [])) {
+                    const optEl = document.createElement("option");
+                    optEl.value = choice.value;
+                    optEl.textContent = choice.label;
+                    if (String(choice.value) === String(opt.default)) {
+                        optEl.selected = true;
+                    }
+                    select.appendChild(optEl);
+                }
+
+                selectWrap.appendChild(select);
+                optGroup.appendChild(selectWrap);
+                optionElements.push({ key: opt.key, getVal: () => select.value });
+            } else {
+                const input = document.createElement("input");
+                input.type = "text";
+                input.className = "script-option-input";
+                input.name = opt.key;
+                if (opt.default) input.value = opt.default;
+                optGroup.appendChild(input);
+                optionElements.push({ key: opt.key, getVal: () => input.value });
+            }
+
+            optionsContainer.appendChild(optGroup);
+        }
+        cardBottom.appendChild(optionsContainer);
+    }
+
     const mainPicker = buildDropzone(scriptMeta.accept, "Seleccionar archivo principal");
     cardBottom.appendChild(mainPicker.dropzone);
 
@@ -270,6 +323,11 @@ function buildCard(scriptMeta) {
         const formData = new FormData();
         formData.append("script_id", scriptMeta.id);
         formData.append("file", selectedFile);
+
+        // Adjuntar opciones seleccionadas
+        for (const { key, getVal } of optionElements) {
+            formData.append(key, getVal());
+        }
 
         for (const { key } of extraPickers) {
             if (selectedExtras[key]) {

@@ -82,6 +82,26 @@ SCRIPT_CATALOG = [
         "accept": ".png,.jpg,.jpeg,.webp,.bmp,.tiff",
     },
     {
+        "id": "informe_promociones",
+        "title": "Informe Promociones",
+        "script": "informe_promociones.py",
+        "description": "Genera el informe comparativo de promociones con opciones para Vecinos, Empleados o Jubilados.",
+        "accept": ".xlsx,.xls,.xlsm,.csv",
+        "options": [
+            {
+                "key": "grupo",
+                "label": "Tipo de Promoción",
+                "type": "select",
+                "default": "1",
+                "choices": [
+                    {"value": "1", "label": "Vecinos"},
+                    {"value": "2", "label": "Empleados"},
+                    {"value": "3", "label": "Jubilados"}
+                ]
+            }
+        ]
+    },
+    {
         "id": "promociones_vecinos",
         "title": "Promociones Vecinos",
         "script": "promociones_vecinos.py",
@@ -733,7 +753,7 @@ def collect_outputs(run_dir: Path, uploaded_paths: list, started_at: float, incl
     return candidates
 
 
-def run_script(script_meta, uploaded_file, extra_files=None):
+def run_script(script_meta, uploaded_file, extra_files=None, options=None):
     run_dir = Path(tempfile.mkdtemp(prefix="panel_scripts_"))
     uploaded_paths = []
 
@@ -748,6 +768,14 @@ def run_script(script_meta, uploaded_file, extra_files=None):
     env["SCRIPT_INPUT_DIR"] = str(run_dir)
     env["SCRIPT_OUTPUT_DIR"] = str(run_dir)
     env["SCRIPT_INPUT_FILE"] = str(uploaded_path)
+
+    if options:
+        for opt_k, opt_v in options.items():
+            k_clean = str(opt_k).strip().upper()
+            v_clean = str(opt_v).strip()
+            env[f"SCRIPT_OPTION_{k_clean}"] = v_clean
+            env[f"SCRIPT_{k_clean}"] = v_clean
+            env[k_clean] = v_clean
 
     if extra_files:
         for key, file_obj in extra_files.items():
@@ -769,12 +797,15 @@ def run_script(script_meta, uploaded_file, extra_files=None):
         if not script_path.is_file():
             script_path = BASE_DIR / script_meta["script"]
 
-
+    stdin_data = ""
+    if options:
+        stdin_data = "\n".join(str(v).strip() for v in options.values()) + "\n"
 
     result = subprocess.run(
         [sys.executable, str(script_path)],
         cwd=str(run_dir),
         env=env,
+        input=stdin_data if stdin_data else None,
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -821,6 +852,16 @@ def run_selected_script():
 
     script_meta = scripts_map[script_id]
 
+    # Procesar opciones si el script las define
+    options = {}
+    for opt in script_meta.get("options", []):
+        opt_key = opt["key"]
+        val = request.form.get(opt_key)
+        if val is not None and val != "":
+            options[opt_key] = val
+        elif "default" in opt:
+            options[opt_key] = opt["default"]
+
     extra_files = {}
     for extra in script_meta.get("extra_files", []):
         key = extra["key"]
@@ -829,7 +870,12 @@ def run_selected_script():
         extra_files[key] = request.files[key]
 
     try:
-        output_payload = run_script(script_meta, uploaded_file, extra_files=extra_files or None)
+        output_payload = run_script(
+            script_meta,
+            uploaded_file,
+            extra_files=extra_files or None,
+            options=options or None,
+        )
         return send_file(
             BytesIO(output_payload["bytes"]),
             as_attachment=True,
